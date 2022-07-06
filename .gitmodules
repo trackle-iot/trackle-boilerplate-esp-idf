@@ -1,0 +1,6 @@
+[submodule "components/trackle-esp-idf"]
+	path = components/trackle-esp-idf
+	url = https://github.com/trackle-iot/trackle-esp-idf.git
+[submodule "components/trackle-utils"]
+	path = components/trackle-utils
+	url = https://github.com/trackle-iot/trackle-utils.git

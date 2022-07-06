@@ -1,0 +1,5 @@
+.pio
+.vscode
+components/*
+!components/trackle-esp-idf
+!components/trackle-utils
