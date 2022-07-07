@@ -1,4 +1,4 @@
-<center><img src="https://www.trackle.io/wp-content/uploads/2022/06/iot-platform-trackle.png" alt="drawing" width="100"/></center>
+<p align="center"><img src="https://www.trackle.io/wp-content/uploads/2022/06/iot-platform-trackle.png" alt="drawing" width="100"/></p>
 
 # Template project for Trackle connected firmware
 
