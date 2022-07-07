@@ -16,6 +16,8 @@
 #include <trackle_utils_bt_provision.h>
 #include <trackle_utils_wifi.h>
 #include <trackle_utils_ota.h>
+#include <trackle_utils_properties.h>
+#include <trackle_utils_notifications.h>
 
 // Local firmware includes
 #include <trackle_hardcoded_credentials.h>
@@ -27,6 +29,20 @@ static const char *TAG = "main";
 // Cloud POST functions
 static int funSuccess(const char *args);
 static int funFailure(const char *args);
+static int incrementCloudNumber(const char *args);
+
+// Cloud GET functions
+static const char *getHalfCloudNumber(const char *args);
+
+// Cloud GET variables
+static int cloudNumber = 0;
+
+// Properties declarations
+Trackle_PropID_t propRealEditable = Trackle_PropID_ERROR;
+Trackle_PropID_t propRealNotEditable = Trackle_PropID_ERROR;
+
+// Notifications declarations
+Trackle_NotificationID_t notifButtonPressed = Trackle_NotificationID_ERROR;
 
 static int updatedPropertyCustomCallback(const char *key, const char *arg, bool isOwner); // Custom callback for properties changes that come from cloud.
 
@@ -46,11 +62,12 @@ void app_main()
 
     // Wifi and BT provisioning setup
     wifi_init();
+    wifi_init_sta();
     trackle_utils_bt_provision_init();
 
     // Fetching Trackle credentials (from NVS or from hardcoded values)
 #ifdef USE_CREDENTIALS_FROM_NVS
-    ESP_LOGI(TAG, "Credentials taken from NVS used for Trackle connection.");
+    ESP_LOGI(TAG, "Using NVS credentials.");
     initStorage(true);
     err = readDeviceInfoFromStorage();
     if (err != ESP_OK)
@@ -59,15 +76,19 @@ void app_main()
         return;
     }
 #else
-    ESP_LOGI(TAG, "Hardcoded credentials used for Trackle connection.");
+    ESP_LOGI(TAG, "Using hardcoded credentials.");
     memcpy(device_id, HARDCODED_DEVICE_ID, sizeof(uint8_t) * 12);
     memcpy(private_key, HARDCODED_PRIVATE_KEY, sizeof(uint8_t) * 122);
 #endif
 
     // Print device information
     ESP_LOGE(TAG, "Firmware version: %d", FIRMWARE_VERSION);
-    ESP_LOGE(TAG, "Device ID:");
+    ESP_LOGE(TAG, "Device ID (on next line):");
     ESP_LOG_BUFFER_HEX_LEVEL(TAG, device_id, 12, ESP_LOG_ERROR);
+    ESP_LOGE(TAG, "Log level: %d", LOG_LOCAL_LEVEL);
+#ifdef PRODUCT_ID
+    ESP_LOGE(TAG, "Product ID: %d", PRODUCT_ID);
+#endif
 
     // Set cloud credentials
     trackleSetKeys(trackle_s, NULL, private_key);
@@ -83,6 +104,23 @@ void app_main()
     // Registering POST functions callable from cloud
     tracklePost(trackle_s, "funSuccess", funSuccess, ALL_USERS);
     tracklePost(trackle_s, "funFailure", funFailure, ALL_USERS);
+    tracklePost(trackle_s, "incrementCloudNumber", incrementCloudNumber, ALL_USERS);
+
+    // Registering variables GETtable from cloud
+    trackleGet(trackle_s, "getCloudNumber", &cloudNumber, VAR_INT);
+
+    // Registering values GETtable from cloud as result of a function call
+    trackleGetFn(trackle_s, "getHalfCloudNumber", getHalfCloudNumber, VAR_JSON);
+
+    // Registering properties and property groups
+    propRealEditable = Trackle_Prop_create("rex", 1000, 3, 0);
+    propRealNotEditable = Trackle_Prop_create("rnex", 1000, 3, 0);
+    Trackle_PropGroupID_t propGroup1 = Trackle_PropGroup_create(5000, true);
+    Trackle_PropGroup_addProp(propRealEditable, propGroup1);
+    Trackle_PropGroup_addProp(propRealNotEditable, propGroup1);
+
+    // Registering notifications
+    notifButtonPressed = Trackle_Notification_create("button", "inputs/btn", "%s pressed: %u, value: %s", 1, 0, 0);
 
     // Callback for cloud editable properties
     trackleSetUpdatePropertyCallback(trackle_s, updatedPropertyCustomCallback);
@@ -92,6 +130,12 @@ void app_main()
 
     // Perform connection to Trackle
     connectTrackle();
+
+    // Start properties serving
+    Trackle_Props_startTask();
+
+    // Start notifications serving
+    Trackle_Notifications_startTask();
 
     for (;;)
     {
@@ -114,11 +158,44 @@ static int funFailure(const char *args)
     return -1;
 }
 
+static int incrementCloudNumber(const char *args)
+{
+    cloudNumber++;
+    return 1;
+}
+
 // END -- Cloud POST functions ----------------------------------------------------------------------------------------------------------------------
+
+// BEGIN -- Cloud GET functions --------------------------------------------------------------------------------------------------------------------
+
+static const char *getHalfCloudNumber(const char *args)
+{
+    static char buffer[40];
+    buffer[0] = '\0';
+    sprintf(buffer, "{\"halfCloudNumber\":%d}", cloudNumber / 2);
+    return buffer;
+}
+
+// END -- Cloud GET functions ----------------------------------------------------------------------------------------------------------------------
 
 static int updatedPropertyCustomCallback(const char *key, const char *arg, bool isOwner)
 {
-    return -1; // -1 means "property not found", -2 means "error in updating property", 1 means "update successful"
+    if (strcmp(key, "rex") == 0)
+    {
+        double doubleValue = 0;
+        if (sscanf(arg, "%lf", &doubleValue) < 1)
+        {
+            return -1;
+        }
+        Trackle_Prop_update(propRealEditable, doubleValue * 1000);
+        ESP_LOGI(TAG, "rex property updated to: %.3f", Trackle_Prop_getValue(propRealEditable) / (double)Trackle_Prop_getScale(propRealEditable));
+        return 1;
+    }
+    else if (strcmp(key, "rnex") == 0)
+    {
+        return -2;
+    }
+    return -3; // -3 means "property not found", -2 means "property not writable", -1 means "error in updating property", 1 means "update successful"
 }
 
 static void monitorFlashButtonForProvisioning()
@@ -128,10 +205,12 @@ static void monitorFlashButtonForProvisioning()
     if (!gpio_get_level(GPIO_NUM_0))
     {
         pressedMillis += MAIN_LOOP_PERIOD_MS;
+        Trackle_Notification_update(notifButtonPressed, 1, 0);
     }
     else
     {
         pressedMillis = 0;
+        Trackle_Notification_update(notifButtonPressed, 0, 0);
     }
     // ... and if pressure lasts more than 10s, enable bluetooth LE provisioning.
     if (pressedMillis > 10000)
