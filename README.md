@@ -1,3 +1,5 @@
+<center><img src="https://www.trackle.io/wp-content/uploads/2022/06/iot-platform-trackle.png" alt="drawing" width="100"/></center>
+
 # Template project for Trackle connected firmware
 
 This repository contains a skeleton project that was created with the intent of providing a base for the development of future applications.
