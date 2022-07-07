@@ -1,21 +1,26 @@
+// Standard library includes
 #include <string.h>
 
+// FreeRTOS includes
 #include <freertos/FreeRTOS.h>
 #include <freertos/event_groups.h>
 
+// Other ESP-IDF includes
 #include <nvs_flash.h>
 #include <esp_log.h>
 #include <driver/gpio.h>
 
+// Trackle libraries includes
 #include <trackle_esp32.h>
 #include <trackle_utils_storage.h>
 #include <trackle_utils_bt_provision.h>
 #include <trackle_utils_wifi.h>
 #include <trackle_utils_ota.h>
 
+// Local firmware includes
 #include <trackle_hardcoded_credentials.h>
 
-#define MAIN_LOOP_PERIOD_MS 10
+#define MAIN_LOOP_PERIOD_MS 10 // Main loop period in milliseconds
 
 static const char *TAG = "main";
 
@@ -23,9 +28,9 @@ static const char *TAG = "main";
 static int funSuccess(const char *args);
 static int funFailure(const char *args);
 
-static int updatedPropertyCustomCallback(const char *key, const char *arg, bool isOwner);
+static int updatedPropertyCustomCallback(const char *key, const char *arg, bool isOwner); // Custom callback for properties changes that come from cloud.
 
-static void monitorFlashButtonForProvisioning();
+static void monitorFlashButtonForProvisioning(); // Periodically check if provisioning button is pressed.
 
 void app_main()
 {
@@ -116,10 +121,10 @@ static int updatedPropertyCustomCallback(const char *key, const char *arg, bool 
     return -1; // -1 means "property not found", -2 means "error in updating property", 1 means "update successful"
 }
 
-// If GPIO0 button (FLASH/BOOT) is kept pressed for more than 10s, enable WiFi provisioning.
 static void monitorFlashButtonForProvisioning()
 {
     static int pressedMillis = 0;
+    // If GPIO0 button (FLASH/BOOT) is pressed, count pressure milliseconds ...
     if (!gpio_get_level(GPIO_NUM_0))
     {
         pressedMillis += MAIN_LOOP_PERIOD_MS;
@@ -128,6 +133,7 @@ static void monitorFlashButtonForProvisioning()
     {
         pressedMillis = 0;
     }
+    // ... and if pressure lasts more than 10s, enable bluetooth LE provisioning.
     if (pressedMillis > 10000)
     {
         xEventGroupSetBits(s_wifi_event_group, START_PROVISIONING);
