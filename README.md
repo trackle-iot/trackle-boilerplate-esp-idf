@@ -51,7 +51,8 @@ The following features are shown in the firmware:
   * Variables GET;
   * GET through functions;
   * Properties;
-  * Notifications.
+  * Notifications;
+  * Events publishing.
 
 ### OTA updates
 

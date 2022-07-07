@@ -47,6 +47,7 @@ Trackle_NotificationID_t notifButtonPressed = Trackle_NotificationID_ERROR;
 static int updatedPropertyCustomCallback(const char *key, const char *arg, bool isOwner); // Custom callback for properties changes that come from cloud.
 
 static void monitorFlashButtonForProvisioning(); // Periodically check if provisioning button is pressed.
+static void publishIfPeriodElapsed();            // Periodically publish event
 
 void app_main()
 {
@@ -137,12 +138,14 @@ void app_main()
     // Start notifications serving
     Trackle_Notifications_startTask();
 
+    TickType_t latestIterationTime = xTaskGetTickCount();
     for (;;)
     {
         trackle_utils_wifi_loop();
         trackle_utils_bt_provision_loop();
         monitorFlashButtonForProvisioning();
-        vTaskDelay(MAIN_LOOP_PERIOD_MS / portTICK_PERIOD_MS);
+        publishIfPeriodElapsed();
+        vTaskDelayUntil(&latestIterationTime, MAIN_LOOP_PERIOD_MS / portTICK_PERIOD_MS);
     }
 }
 
@@ -218,5 +221,15 @@ static void monitorFlashButtonForProvisioning()
         xEventGroupSetBits(s_wifi_event_group, START_PROVISIONING);
         pressedMillis = 0;
         ESP_LOGI(TAG, "Starting WiFi provisioning through Bluetooth ...");
+    }
+}
+
+static void publishIfPeriodElapsed()
+{
+    static int waitingMillis = 0;
+    waitingMillis += MAIN_LOOP_PERIOD_MS;
+    if (waitingMillis > 20000)
+    {
+        tracklePublishSecure("timed_events/every20s", "20 seconds passed");
     }
 }
