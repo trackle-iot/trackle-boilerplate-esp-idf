@@ -4,3 +4,6 @@
 [submodule "components/trackle-utils"]
 	path = components/trackle-utils
 	url = https://github.com/trackle-iot/trackle-utils.git
+[submodule "components/mbedtls"]
+	path = components/mbedtls
+	url = https://github.com/trackle-iot/trackle-mbedtls.git
