@@ -2,7 +2,7 @@
 
 This repository contains a skeleton project that was created with the intent of providing a base for the development of future applications.
 
-The project is **fully configured to connect to the cloud** (except for credentials), and **comes with a good amount of boilerplate code** already written.
+The project is **fully configured to connect to the cloud** (except for credentials), and comes **with a good amount of boilerplate code** already written.
 
 ## Development environment
 
@@ -13,7 +13,7 @@ Usage of the code in other environments is currently untested.
 ## Functionality
 
 Once compiled, the firmware provides the following functionality:
-  * Connection to the Trackle cloud through Wi-fi connection to LAN;
+  * Connection to the Trackle cloud through Wi-fi;
   * Provisioning of Wi-fi connection credentials through Bluetooth LE;
   * Usage examples of cloud related main features;
   * OTA updates enabled out of the box.
@@ -24,7 +24,7 @@ In order to connect to the cloud (and even to be able to build the firmware), on
   * Hardcoded credentials;
   * Credentials from internal flash storage.
 
-In the first case, credentials must be provided to the firmware by putting them in the source code (see instructions in "include/trackle_hardcoded_credentials.h"). This solution is provided since it's the quickest and it's tought to be used for tests.
+In the first case, credentials must be provided to the firmware by putting them in the source code (see instructions in `include/trackle_hardcoded_credentials.h`). This solution is provided since it's the quickest and it's tought to be used for tests.
 
 In the second case, credentials are taken from the flash storage, so they must have been previously written there using the [credentials management tools](https://github.com/trackle-iot/trackle-device-id-generator.git).
 
@@ -32,7 +32,7 @@ The choice is made through the declaration of the `USE_CREDENTIALS_FROM_FLASH` c
 
 ### Provisioning of Wi-fi through Bluetooth LE
 
-Provisioning of Wi-fi credentials to the device can be done using [ESP BLE Provisioning]](https://play.google.com/store/apps/details?id=com.espressif.provble): Espressif's official provisioning app.
+Provisioning of Wi-fi credentials to the device can be done using [ESP BLE Provisioning](https://play.google.com/store/apps/details?id=com.espressif.provble): Espressif's official provisioning app.
 
 In order to connect to the device using the app, it's necessary to keep pressed the FLASH button on the device for 10 seconds. After this step, the app will be able to find the device and connect to it.
 
