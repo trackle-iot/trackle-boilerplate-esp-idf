@@ -4,6 +4,12 @@ This repository contains a skeleton project that was created with the intent of 
 
 The project is **fully configured to connect to the cloud** (except for credentials), and comes **with a good amount of boilerplate code** already written.
 
+In order to clone the repository with all the required submodules, the following command can be used:
+
+```
+git clone --recurse-submodules https://github.com/trackle-iot/trackle-firmware-template-project.git
+```
+
 ## Development environment
 
 The project was created with PlatformIO inside Visual Studio Code, so this template is tought to be used inside such environment.
@@ -24,7 +30,7 @@ In order to connect to the cloud (and even to be able to build the firmware), on
   * Hardcoded credentials;
   * Credentials from internal flash storage.
 
-In the first case, credentials must be provided to the firmware by putting them in the source code (see instructions in `include/trackle_hardcoded_credentials.h`). This solution is provided since it's the quickest and it's tought to be used for tests.
+In the first case, credentials must be provided to the firmware by putting them in the source code (see instructions in [trackle_hardcoded_credentials.h](include/trackle_hardcoded_credentials.h)). This solution is provided since it's the quickest and it's tought to be used for tests.
 
 In the second case, credentials are taken from the flash storage, so they must have been previously written there using the [credentials management tools](https://github.com/trackle-iot/trackle-device-id-generator.git).
 
