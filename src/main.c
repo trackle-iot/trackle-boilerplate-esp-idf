@@ -1,32 +1,31 @@
 #include <string.h>
 
+#include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
+
 #include <nvs_flash.h>
 #include <esp_log.h>
+#include <driver/gpio.h>
 
 #include <trackle_esp32.h>
 #include <trackle_utils_storage.h>
+#include <trackle_utils_bt_provision.h>
+#include <trackle_utils_wifi.h>
 #include <trackle_utils_ota.h>
 
+#include <trackle_hardcoded_credentials.h>
+
+#define MAIN_LOOP_PERIOD_MS 10
+
 static const char *TAG = "main";
-
-// If enabled in platformio.ini, use hardcoded credentials
-#ifdef USE_HARDCODED_CREDENTIALS
-
-const uint8_t HARDCODED_PRIVATE_KEY[] = {
-#error "Private key not set" // Replace this line with private key, e.g. 0xF6, 0x07, etc. (you can use "xxd -i" for conversion from raw form)
-};
-
-const uint8_t HARDCODED_DEVICE_ID[] = {
-#error "Device ID not set" // Replace this line with device ID, e.g. "10af..." -> "0x10, 0xaf, ..." etc. (you can get it from Trackle dashboard)
-};
-
-#endif
 
 // Cloud POST functions
 static int funSuccess(const char *args);
 static int funFailure(const char *args);
 
 static int updatedPropertyCustomCallback(const char *key, const char *arg, bool isOwner);
+
+static void monitorFlashButtonForProvisioning();
 
 void app_main()
 {
@@ -40,12 +39,12 @@ void app_main()
         return;
     }
 
+    // Wifi and BT provisioning setup
+    wifi_init();
+    trackle_utils_bt_provision_init();
+
     // Fetching Trackle credentials (from NVS or from hardcoded values)
-#ifdef USE_HARDCODED_CREDENTIALS
-    ESP_LOGI(TAG, "Hardcoded credentials used for Trackle connection.");
-    memcpy(device_id, HARDCODED_DEVICE_ID, sizeof(uint8_t) * 12);
-    memcpy(private_key, HARDCODED_PRIVATE_KEY, sizeof(uint8_t) * 122);
-#else
+#ifdef USE_CREDENTIALS_FROM_NVS
     ESP_LOGI(TAG, "Credentials taken from NVS used for Trackle connection.");
     initStorage(true);
     err = readDeviceInfoFromStorage();
@@ -54,6 +53,10 @@ void app_main()
         ESP_LOGE(TAG, "Error reading Trackle credentials from NVS: err=%s", esp_err_to_name(err));
         return;
     }
+#else
+    ESP_LOGI(TAG, "Hardcoded credentials used for Trackle connection.");
+    memcpy(device_id, HARDCODED_DEVICE_ID, sizeof(uint8_t) * 12);
+    memcpy(private_key, HARDCODED_PRIVATE_KEY, sizeof(uint8_t) * 122);
 #endif
 
     // Print device information
@@ -65,6 +68,9 @@ void app_main()
     trackleSetKeys(trackle_s, NULL, private_key);
     trackleSetDeviceId(trackle_s, device_id);
     trackleSetFirmwareVersion(trackle_s, FIRMWARE_VERSION);
+
+    // Set GPIO0 (FLASH/BOOT button on most boards) as input, to start provisioning through bluetooth
+    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
 
     // Init Trackle
     initTrackle();
@@ -86,7 +92,8 @@ void app_main()
     {
         trackle_utils_wifi_loop();
         trackle_utils_bt_provision_loop();
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        monitorFlashButtonForProvisioning();
+        vTaskDelay(MAIN_LOOP_PERIOD_MS / portTICK_PERIOD_MS);
     }
 }
 
@@ -107,4 +114,24 @@ static int funFailure(const char *args)
 static int updatedPropertyCustomCallback(const char *key, const char *arg, bool isOwner)
 {
     return -1; // -1 means "property not found", -2 means "error in updating property", 1 means "update successful"
+}
+
+// If GPIO0 button (FLASH/BOOT) is kept pressed for more than 10s, enable WiFi provisioning.
+static void monitorFlashButtonForProvisioning()
+{
+    static int pressedMillis = 0;
+    if (!gpio_get_level(GPIO_NUM_0))
+    {
+        pressedMillis += MAIN_LOOP_PERIOD_MS;
+    }
+    else
+    {
+        pressedMillis = 0;
+    }
+    if (pressedMillis > 10000)
+    {
+        xEventGroupSetBits(s_wifi_event_group, START_PROVISIONING);
+        pressedMillis = 0;
+        ESP_LOGI(TAG, "Starting WiFi provisioning through Bluetooth ...");
+    }
 }
