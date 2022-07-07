@@ -65,14 +65,14 @@ void app_main()
     wifi_init_sta();
     trackle_utils_bt_provision_init();
 
-    // Fetching Trackle credentials (from NVS or from hardcoded values)
-#ifdef USE_CREDENTIALS_FROM_NVS
-    ESP_LOGI(TAG, "Using NVS credentials.");
+    // Fetching Trackle credentials (from flash storage or from hardcoded values)
+#ifdef USE_CREDENTIALS_FROM_FLASH
+    ESP_LOGI(TAG, "Using credentials from flash storage.");
     initStorage(true);
     err = readDeviceInfoFromStorage();
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "Error reading Trackle credentials from NVS: err=%s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "Error reading Trackle credentials from flash: err=%s", esp_err_to_name(err));
         return;
     }
 #else

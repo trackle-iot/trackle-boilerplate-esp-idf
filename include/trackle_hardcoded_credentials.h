@@ -3,8 +3,8 @@
 
 #include <esp_types.h>
 
-// If NOT using credentials from NVS, use hardcoded ones.
-#ifndef USE_CREDENTIALS_FROM_NVS // <-- if NOT defined
+// If NOT using credentials from flash memory, use hardcoded ones.
+#ifndef USE_CREDENTIALS_FROM_FLASH // <-- if NOT defined
 
 /**
  * To generate a private key-device ID pair:
