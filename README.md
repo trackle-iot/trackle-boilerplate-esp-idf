@@ -2,7 +2,6 @@
 
 <p align="center"><img src="https://www.trackle.io/wp-content/uploads/2022/06/iot-platform-trackle.png" alt="drawing" width="100"/></p>
 
-
 ## Table of contents
 
 1. [Content of the repository](#content-of-the-repository)
