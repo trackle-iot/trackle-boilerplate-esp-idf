@@ -231,5 +231,6 @@ static void publishIfPeriodElapsed()
     if (waitingMillis > 20000)
     {
         tracklePublishSecure("timed_events/every20s", "20 seconds passed");
+        waitingMillis = 0;
     }
 }
