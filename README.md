@@ -1,6 +1,7 @@
 # Template project for Trackle connected firmware
 
-<p align="center"><img src="https://www.trackle.io/wp-content/uploads/2022/06/iot-platform-trackle.png" alt="drawing" width="100"/></p>
+<p align="center">
+<br><img src="https://www.trackle.io/wp-content/uploads/2022/06/iot-platform-trackle.png" alt="drawing" width="100"/></p>
 
 ## Table of contents
 
