@@ -9,7 +9,7 @@ The project is **fully configured to connect to the cloud** (except for credenti
 In order to clone the repository with all the required submodules, the following command can be used:
 
 ```
-git clone --recurse-submodules https://github.com/trackle-iot/trackle-firmware-template-project.git
+git clone --recurse-submodules https://github.com/trackle-iot/trackle-firmware-template-project.git <new_folder_name>
 ```
 
 ## Development environment
