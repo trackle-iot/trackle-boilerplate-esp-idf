@@ -2,15 +2,54 @@
 
 # Template project for Trackle connected firmware
 
-This repository contains a skeleton project that was created with the intent of providing a base for the development of future applications.
+## Table of contents
+
+1. [Content of the repository](#content-of-the-repository)
+2. [Setup of a new project](#setup-of-a-new-project)
+3. [Development environment](#development-environment)
+4. [Functionality provided by this template](#functionality-provided-by-this-template)
+5. [Setting of product ID](#setting-of-product-id)
+
+
+## Content of the repository
+
+This repository contains a skeleton project that was created with the intent of providing a base for the development of future applications that want to connect to the Trackle platform.
 
 The project is **fully configured to connect to the cloud** (except for credentials), and comes **with a good amount of boilerplate code** already written.
 
-In order to clone the repository with all the required submodules, the following command can be used:
+## Setup of a new project
+
+To create a new project based on this template, please follow these steps:
+
+1. Clone the repository with all the required submodules:
 
 ```
 git clone --recurse-submodules https://github.com/trackle-iot/trackle-firmware-template-project.git <new_folder_name>
 ```
+
+2. Move to the project directory:
+
+```
+cd <new_folder_name>
+```
+
+3. Remove the original repository from remotes. By doing this, you avoid that, by doing `git push`, these changes end up in the template project's repository:
+
+```
+git remote remove origin
+```
+
+4. Create a new empty repository (no default README or .gitignore) where to push the new project (e.g. on Github);
+
+5. Add the new repository as origin of the new project and push changes to it:
+
+```
+git remote add origin <new_repository_url>
+git branch -M main
+git push -u origin main
+```
+
+From now on, all the commits that will be pushed with the `git push` command will be pushed to the new repository.
 
 ## Development environment
 
@@ -18,7 +57,7 @@ The project was created with PlatformIO inside Visual Studio Code, so this templ
 
 Usage of the code in other environments is currently untested.
 
-## Functionality
+## Functionality provided by this template
 
 Once compiled, the firmware provides the following functionality:
   * Connection to the Trackle cloud through Wi-fi;
@@ -62,7 +101,7 @@ OTA updates are enabled. New firmware versions can be flashed by providing a val
 
 The URL must point to a ".bin" compiled firmware hosted on a publicly accessible webserver.
 
-## Product ID
+## Setting of product ID
 
 Product ID can be set by declaring the `IS_PRODUCT` and `PRODUCT_ID` constants in `platformio.ini`. While intializing `IS_PRODUCT` with a value is not mandatory, `PRODUCT_ID` on the contrary must be initialized with the desired product ID.
 
