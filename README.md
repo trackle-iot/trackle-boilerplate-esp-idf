@@ -18,6 +18,14 @@ This repository contains a skeleton project that was created with the intent of 
 
 The project is **fully configured to connect to the cloud** (except for credentials), and comes **with a good amount of boilerplate code** already written.
 
+## Authentication
+
+Please note that, in case this repository is private, your GIT client and GitHub account must be set up to allow authentication via SSH and HTTPS.
+
+You can configure your account and GIT client by following GitHub's official guides [for SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) and [for HTTPS](https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
+
+If you set a password for your SSH key, you may be required to insert it at some point during the procedure described in the next section. 
+
 ## Setup of a new project
 
 To create a new project based on this template, please follow these steps:
