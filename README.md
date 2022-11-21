@@ -6,10 +6,11 @@
 ## Table of contents
 
 1. [Content of the repository](#content-of-the-repository)
-2. [Setup of a new project](#setup-of-a-new-project)
-3. [Development environment](#development-environment)
-4. [Functionality provided by this template](#functionality-provided-by-this-template)
-5. [Setting of product ID](#setting-of-product-id)
+2. [Authentication](#authentication)
+3. [Setup of a new project](#setup-of-a-new-project)
+4. [Development environment](#development-environment)
+5. [Functionality provided by this template](#functionality-provided-by-this-template)
+6. [Setting of product ID](#setting-of-product-id)
 
 
 ## Content of the repository
