@@ -20,7 +20,7 @@
 #include <trackle_utils_notifications.h>
 
 // Local firmware includes
-#include <trackle_hardcoded_credentials.h>
+#include "trackle_hardcoded_credentials.h"
 
 #define MAIN_LOOP_PERIOD_MS 10 // Main loop period in milliseconds
 
@@ -32,7 +32,8 @@ static int funFailure(const char *args);
 static int incrementCloudNumber(const char *args);
 
 // Cloud GET functions
-static const char *getHalfCloudNumber(const char *args);
+static const void *getCloudNumberMessage(const char *args);
+static const void *getHalfCloudNumber(const char *args);
 
 // Cloud GET variables
 static int cloudNumber = 0;
@@ -78,8 +79,8 @@ void app_main()
     }
 #else
     ESP_LOGI(TAG, "Using hardcoded credentials.");
-    memcpy(device_id, HARDCODED_DEVICE_ID, sizeof(uint8_t) * 12);
-    memcpy(private_key, HARDCODED_PRIVATE_KEY, sizeof(uint8_t) * 122);
+    memcpy(device_id, HARDCODED_DEVICE_ID, sizeof(uint8_t) * DEVICE_ID_LENGTH);
+    memcpy(private_key, HARDCODED_PRIVATE_KEY, sizeof(uint8_t) * PRIVATE_KEY_LENGTH);
 #endif
 
     // Print device information
@@ -92,7 +93,7 @@ void app_main()
 #endif
 
     // Set cloud credentials
-    trackleSetKeys(trackle_s, NULL, private_key);
+    trackleSetKeys(trackle_s, private_key);
     trackleSetDeviceId(trackle_s, device_id);
     trackleSetFirmwareVersion(trackle_s, FIRMWARE_VERSION);
 
@@ -107,11 +108,9 @@ void app_main()
     tracklePost(trackle_s, "funFailure", funFailure, ALL_USERS);
     tracklePost(trackle_s, "incrementCloudNumber", incrementCloudNumber, ALL_USERS);
 
-    // Registering variables GETtable from cloud
-    trackleGet(trackle_s, "getCloudNumber", &cloudNumber, VAR_INT);
-
     // Registering values GETtable from cloud as result of a function call
-    trackleGetFn(trackle_s, "getHalfCloudNumber", getHalfCloudNumber, VAR_JSON);
+    trackleGet(trackle_s, "getCloudNumberMessage", getCloudNumberMessage, VAR_STRING);
+    trackleGet(trackle_s, "getHalfCloudNumber", getHalfCloudNumber, VAR_JSON);
 
     // Registering properties and property groups
     propRealEditable = Trackle_Prop_create("rex", 1000, 3, 0);
@@ -124,7 +123,7 @@ void app_main()
     notifButtonPressed = Trackle_Notification_create("button", "inputs/btn", "%s pressed: %u, value: %s", 1, 0, 0);
 
     // Callback for cloud editable properties
-    trackleSetUpdatePropertyCallback(trackle_s, updatedPropertyCustomCallback);
+    trackleSetUpdateStateCallback(trackle_s, updatedPropertyCustomCallback);
 
     // Enabling OTA
     trackleSetFirmwareUrlUpdateCallback(trackle_s, firmware_ota_url);
@@ -171,7 +170,14 @@ static int incrementCloudNumber(const char *args)
 
 // BEGIN -- Cloud GET functions --------------------------------------------------------------------------------------------------------------------
 
-static const char *getHalfCloudNumber(const char *args)
+static char cloudNumberMessage[64];
+static const void *getCloudNumberMessage(const char *args)
+{
+    sprintf(cloudNumberMessage, "The number is %d !", cloudNumber);
+    return cloudNumberMessage;
+}
+
+static const void *getHalfCloudNumber(const char *args)
 {
     static char buffer[40];
     buffer[0] = '\0';

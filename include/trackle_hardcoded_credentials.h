@@ -3,6 +3,8 @@
 
 #include <esp_types.h>
 
+#include <trackle_esp32.h>
+
 // If NOT using credentials from flash memory, use hardcoded ones.
 #ifndef USE_CREDENTIALS_FROM_FLASH // <-- if NOT defined
 
@@ -21,11 +23,11 @@
 
 #error "Did you put the Trackle credentials in 'include/trackle_hardcoded_credentials.h' ?"
 
-const uint8_t HARDCODED_DEVICE_ID[12] = {
+const uint8_t HARDCODED_DEVICE_ID[DEVICE_ID_LENGTH] = {
     // device ID bytes go here (e.g. 0x04, 0x58, 0xFG ...)
 };
 
-const uint8_t HARDCODED_PRIVATE_KEY[122] = {
+const uint8_t HARDCODED_PRIVATE_KEY[PRIVATE_KEY_LENGTH] = {
     // private key bytes go here (e.g. 0x04, 0x58, 0xFG ...)
 };
 
