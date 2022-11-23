@@ -34,7 +34,7 @@ To create a new project based on this template, please follow these steps:
 1. Clone the repository with all the required submodules:
 
 ```
-git clone --recurse-submodules https://github.com/trackle-iot/trackle-firmware-template-project.git <new_folder_name>
+git clone --recurse-submodules https://github.com/trackle-iot/trackle-boilerplate-esp-idf.git <new_folder_name>
 ```
 
 2. Move to the project directory:
