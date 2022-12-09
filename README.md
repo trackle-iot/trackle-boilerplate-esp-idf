@@ -21,11 +21,9 @@ The project is **fully configured to connect to the cloud** (except for credenti
 
 ## Authentication
 
-Please note that, in case this repository is private, your GIT client and GitHub account must be set up to allow authentication via SSH and HTTPS.
+Please note that, in case this repository is private, your GIT client and GitHub account must be set up to allow authentication via HTTPS.
 
-You can configure your account and GIT client by following GitHub's official guides [for SSH](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) and [for HTTPS](https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
-
-If you set a password for your SSH key, you may be required to insert it at some point during the procedure described in the next section. 
+You can configure your account and GIT client by following GitHub's [official guide](https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
 
 ## Setup of a new project
 
@@ -34,7 +32,7 @@ To create a new project based on this template, please follow these steps:
 1. Clone the repository with all the required submodules:
 
 ```
-git clone --recurse-submodules https://github.com/trackle-iot/trackle-boilerplate-esp-idf.git <new_folder_name>
+git clone https://github.com/trackle-iot/trackle-boilerplate-esp-idf.git <new_folder_name>
 ```
 
 2. Move to the project directory:
