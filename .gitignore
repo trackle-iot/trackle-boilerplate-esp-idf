@@ -2,3 +2,5 @@
 .vscode
 *.DS_Store
 platformio-device-monitor-*.log
+components
+.fetch_dependencies.shelve

@@ -65,6 +65,8 @@ void app_main()
     // Wifi and BT provisioning setup
     wifi_init();
     wifi_init_sta();
+
+    trackle_utils_bt_provision_set_device_name("TrackleBpPrj");
     trackle_utils_bt_provision_init();
 
     // Fetching Trackle credentials (from flash storage or from hardcoded values)
