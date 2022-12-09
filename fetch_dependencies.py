@@ -44,6 +44,9 @@ def get_tar_root_dirs(tar):
 
 print("Resolving dependencies...")
 
+if not os.path.isdir(DEPS_DEST_PATH):
+    os.mkdir(DEPS_DEST_PATH)
+
 with shelve.open(CACHE_FILE_NAME) as cache:
     
     dependencies = env.GetProjectOption(PLATFORMIO_INI_VAR)
