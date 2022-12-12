@@ -81,7 +81,7 @@ In order to connect to the cloud (and even to be able to build the firmware), on
   * Hardcoded credentials;
   * Credentials from internal flash storage.
 
-In the first case, credentials must be provided to the firmware by putting them in the source code (see instructions in [trackle_hardcoded_credentials.h](include/trackle_hardcoded_credentials.h)). This solution is provided since it's the quickest and it's tought to be used for tests.
+In the first case, credentials must be provided to the firmware by putting them in the source code (see instructions in [trackle_hardcoded_credentials.h](include/trackle_hardcoded_credentials.h)). This solution is provided since it's the quickest and it's thought to be used for tests.
 
 In the second case, credentials are taken from the flash storage, so they must have been previously written there using the [credentials management tools](https://github.com/trackle-iot/trackle-device-id-generator.git).
 
