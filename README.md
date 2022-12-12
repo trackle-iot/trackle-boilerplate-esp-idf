@@ -61,7 +61,7 @@ From now on, all the commits that will be pushed with the `git push` command wil
 
 ## Development environment
 
-The project was created with PlatformIO inside Visual Studio Code, so this template is tought to be used inside such environment.
+The project was created with PlatformIO inside Visual Studio Code, so this template is thought to be used inside such environment.
 
 The set-up environment takes care of downloading the necessary libraries specified using the ```custom_dependencies``` variable defined in ```platformio.ini```.
 
