@@ -29,7 +29,7 @@ You can configure your account and GIT client by following GitHub's [official gu
 
 To create a new project based on this template, please follow these steps:
 
-1. Clone the repository with all the required submodules:
+1. Clone the repository:
 
 ```
 git clone https://github.com/trackle-iot/trackle-boilerplate-esp-idf.git <new_folder_name>
@@ -64,6 +64,10 @@ From now on, all the commits that will be pushed with the `git push` command wil
 The project was created with PlatformIO inside Visual Studio Code, so this template is tought to be used inside such environment.
 
 Usage of the code in other environments is currently untested.
+
+The set-up environment takes care of downloading the necessary libraries specified using the ```custom_dependencies``` variable defined in ```platformio.ini```.
+
+For this task to be performed, it's necessary that the ```fetch_dependencies.py``` script is present in the root directory of the project.
 
 ## Functionality provided by this template
 
