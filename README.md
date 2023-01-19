@@ -55,8 +55,6 @@ From now on, all the commits that will be pushed with the `git push` command wil
 
 The project was created with PlatformIO inside Visual Studio Code, so this template is tought to be used inside such environment.
 
-The project is compatible with PlatformIO Visual Studio Code extension v. 5.3.0. Newer versions are not supported yet.
-
 The set-up environment takes care of downloading the necessary libraries specified using the ```custom_dependencies``` variable defined in ```platformio.ini```.
 
 For this task to be performed, it's necessary that the ```fetch_dependencies.py``` script is present in the root directory of the project.
