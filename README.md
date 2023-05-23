@@ -61,6 +61,15 @@ In order for the described mechanism to work, it's necessary that the `fetch_git
 
 If access to private repositories is required, the previous script needs that the file `.pio_github_token` is present in user's home directory and that such file contains a valid Github access token. This token must have permissions to access the repositories containing assets specified in `custom_github_assets` configuration variable. If the token file doesn't exist, or if its empty, only public repositories can be accessed.
 
+Please note that, in order to use the `fetch_github_assets.py` script, the [PyGithub](https://pypi.org/project/PyGithub/) library must be installed in Platformio's Python interpreter.
+
+The following shell session shows how to install this library:
+```
+cd ~/.platformio/penv/bin
+source activate
+pip3 install PyGithub
+```
+
 ## Functionality provided by this template
 
 Once compiled, the firmware provides the following functionality:
