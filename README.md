@@ -6,24 +6,16 @@
 ## Table of contents
 
 1. [Content of the repository](#content-of-the-repository)
-2. [Authentication](#authentication)
-3. [Setup of a new project](#setup-of-a-new-project)
-4. [Development environment](#development-environment)
-5. [Functionality provided by this template](#functionality-provided-by-this-template)
-6. [Setting of product ID](#setting-of-product-id)
-
+2. [Setup of a new project](#setup-of-a-new-project)
+3. [Development environment](#development-environment)
+4. [Functionality provided by this template](#functionality-provided-by-this-template)
+5. [Setting of product ID](#setting-of-product-id)
 
 ## Content of the repository
 
 This repository contains a skeleton project that was created with the intent of providing a base for the development of future applications that want to connect to the Trackle platform through an ESP32 device.
 
 The project is **fully configured to connect to the cloud** (except for credentials), and comes **with a good amount of boilerplate code** already written.
-
-## Authentication
-
-Please note that, in case this repository is private, your GIT client and GitHub account must be set up to allow authentication via HTTPS.
-
-You can configure your account and GIT client by following GitHub's [official guide](https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token).
 
 ## Setup of a new project
 
@@ -79,13 +71,29 @@ Once compiled, the firmware provides the following functionality:
 
 ### Connection to the cloud
 
+#### Get a Device ID and a private key
+* Create an account on Trackle Cloud (https://trackle.cloud/)
+* Open "My Devices" section from the drawer
+* Click the button "Claim a device"
+* Select the link "I don't have a device id", then Continue
+* The Device ID will be shown on the screen and the private key file will be download with name <device_id>.der where <device_id> is Device ID taken from Trackle.
+
+Device ID and the private key are the credentials needed by Trackle cloud to authenticate and identify the device.
+
 In order to connect to the cloud (and even to be able to build the firmware), one must decide if connection will be performed using:
   * Hardcoded credentials;
   * Credentials from internal flash storage.
 
 In the first case, credentials must be provided to the firmware by putting them in the source code (see instructions in [trackle_hardcoded_credentials.h](include/trackle_hardcoded_credentials.h)). This solution is provided since it's the quickest and it's tought to be used for tests.
 
-In the second case, credentials are taken from the flash storage, so they must have been previously written there using the [credentials management tools](https://github.com/trackle-iot/trackle-device-id-generator.git).
+In the second case, credentials are taken from the flash storage, so they must have been previously created and written using [NVS Partition Generator Utility](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/storage/nvs_partition_gen.html) with the following CSV File Format:
+
+```
+key,type,encoding,value
+device,namespace,,
+device_id,data,hex2bin,<device_id>
+private_key,file,binary,<device_id>.der
+```
 
 The choice is made through the declaration of the `USE_CREDENTIALS_FROM_FLASH` constant in `platformio.ini`.
 
