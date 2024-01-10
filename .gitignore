@@ -5,3 +5,4 @@ platformio-device-monitor-*.log
 components
 .fetch_dependencies.shelve
 .fetch_github_assets.shelve
+/trackle-library-subbuild

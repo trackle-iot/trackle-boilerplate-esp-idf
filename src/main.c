@@ -105,7 +105,7 @@ void app_main()
 #endif
 
     // Print device information
-    ESP_LOGE(TAG, "Firmware version: %d", FIRMWARE_VERSION);
+    // ESP_LOGE(TAG, "Firmware version: %d", FIRMWARE_VERSION);
     ESP_LOGE(TAG, "Device ID (on next line):");
     ESP_LOG_BUFFER_HEX_LEVEL(TAG, device_id, 12, ESP_LOG_ERROR);
     ESP_LOGE(TAG, "Log level: %d", LOG_LOCAL_LEVEL);
@@ -113,16 +113,16 @@ void app_main()
     ESP_LOGE(TAG, "Product ID: %d", PRODUCT_ID);
 #endif
 
+    // Init Trackle
+    initTrackle();
+    
     // Set cloud credentials
     trackleSetKeys(trackle_s, private_key);
     trackleSetDeviceId(trackle_s, device_id);
-    trackleSetFirmwareVersion(trackle_s, FIRMWARE_VERSION);
+    // trackleSetFirmwareVersion(trackle_s, FIRMWARE_VERSION);
 
     // Set GPIO0 (FLASH/BOOT button on most boards) as input, to start provisioning through bluetooth
     gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
-
-    // Init Trackle
-    initTrackle();
 
     // Registering POST functions callable from cloud
     tracklePost(trackle_s, "funSuccess", funSuccess, ALL_USERS);
