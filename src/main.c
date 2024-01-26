@@ -16,13 +16,14 @@
   License along with this library; if not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************
  */
- 
+
 // Standard library includes
 #include <string.h>
 
 // FreeRTOS includes
 #include <freertos/FreeRTOS.h>
 #include <freertos/event_groups.h>
+#include <freertos/task.h>
 
 // Other ESP-IDF includes
 #include <nvs_flash.h>
@@ -68,6 +69,7 @@ static int updatedPropertyCustomCallback(const char *key, const char *arg, bool 
 
 static void monitorFlashButtonForProvisioning(); // Periodically check if provisioning button is pressed.
 static void publishIfPeriodElapsed();            // Periodically publish event
+static void logTaskStatus();                     // Periodically log task status
 
 void app_main()
 {
@@ -115,7 +117,7 @@ void app_main()
 
     // Init Trackle
     initTrackle();
-    
+
     // Set cloud credentials
     trackleSetKeys(trackle_s, private_key);
     trackleSetDeviceId(trackle_s, device_id);
@@ -147,7 +149,7 @@ void app_main()
     trackleSetUpdateStateCallback(trackle_s, updatedPropertyCustomCallback);
 
     // Enabling OTA
-    trackleSetFirmwareUrlUpdateCallback(trackle_s, firmware_ota_url);
+    trackleSetOtaUpdateCallback(trackle_s, firmware_ota_url);
 
     // Perform connection to Trackle
     connectTrackle();
@@ -165,6 +167,7 @@ void app_main()
         trackle_utils_bt_provision_loop();
         monitorFlashButtonForProvisioning();
         publishIfPeriodElapsed();
+        logTaskStatus();
         vTaskDelayUntil(&latestIterationTime, MAIN_LOOP_PERIOD_MS / portTICK_PERIOD_MS);
     }
 }
@@ -258,6 +261,20 @@ static void publishIfPeriodElapsed()
     if (waitingMillis > 20000)
     {
         tracklePublishSecure("timed_events/every20s", "20 seconds passed");
+        waitingMillis = 0;
+    }
+}
+
+static void logTaskStatus()
+{
+    static int waitingMillis = 0;
+    waitingMillis += MAIN_LOOP_PERIOD_MS;
+    if (waitingMillis > 10000)
+    {
+        char stats_buffer[4096];
+        vTaskList(stats_buffer);
+        ESP_LOGI(TAG, "Task Name\tStatus\tPrio\tHWM\tTask\tAffinity");
+        ESP_LOGI(TAG, "%s", stats_buffer);
         waitingMillis = 0;
     }
 }
