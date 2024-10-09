@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-" Download private or public Github asset "
+" Download private or public Github asset v2 "
 
 import os
 import sys
@@ -55,19 +55,19 @@ def fetch_asset_url(gh_token, repo_name, release_tag, desired_asset_name):
             return asset.url
     raise AssetNotFound(desired_asset_name, release_tag, repo_name)
 
-def download_asset(gh_token, asset_url, local_path, local_md5):
+def download_asset(gh_token, asset_url, local_path, local_etag):
     " Download asset file "
     http_heads = {"Accept": "application/octet-stream"}
     if gh_token is not None:
         http_heads["Authorization"] = f"Bearer {gh_token}"
     req = requests.get(asset_url, headers=http_heads, stream=True, timeout=10)
     if req.status_code == 200:
-        remote_md5 = req.headers.get("Content-MD5")
-        if not local_md5 or local_md5 != remote_md5:
+        remote_etag = req.headers.get("etag")
+        if not local_etag or local_etag != remote_etag:
             with open(local_path, "wb") as downloaded_file:
                 for chunk in req.iter_content(chunk_size=1024*256):
                     downloaded_file.write(chunk)
-            return True, remote_md5
+            return True, remote_etag
         return False, None
     else:
         raise DownloadFailed(local_path, req.status_code)
@@ -137,9 +137,9 @@ if not hasattr(env, "IsCleanTarget") or not env.IsCleanTarget():
                         try:
                             tar_path = os.path.join(COMPONENTS_DIR, filename)
                             dir_path = os.path.join(COMPONENTS_DIR, component)
-                            curr_md5 = os.path.exists(dir_path) and os.path.isdir(dir_path) \
+                            curr_etag = os.path.exists(dir_path) and os.path.isdir(dir_path) \
                                         and metadata.get(component)
-                            dwnld_done, dwnld_md5 = download_asset(token, dwnld_url, tar_path, curr_md5)
+                            dwnld_done, dwnld_etag = download_asset(token, dwnld_url, tar_path, curr_etag)
                             if dwnld_done:
                                 print(f" - {component} downloaded because different from local version.")
                                 print("   \tUntarring... ", end="")
@@ -151,7 +151,7 @@ if not hasattr(env, "IsCleanTarget") or not env.IsCleanTarget():
                                     raise exc
                                 else:
                                     print("done")
-                                    metadata[component] = dwnld_md5
+                                    metadata[component] = dwnld_etag
                                 finally:
                                     sys.stdout.flush()
                             else:
