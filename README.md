@@ -5,11 +5,19 @@
 
 ## Table of contents
 
-1. [Content of the repository](#content-of-the-repository)
-2. [Setup of a new project](#setup-of-a-new-project)
-3. [Development environment](#development-environment)
-4. [Functionality provided by this template](#functionality-provided-by-this-template)
-5. [Setting of product ID](#setting-of-product-id)
+- [Template project for Trackle connected firmware](#template-project-for-trackle-connected-firmware)
+  - [Table of contents](#table-of-contents)
+  - [Content of the repository](#content-of-the-repository)
+  - [Setup of a new project](#setup-of-a-new-project)
+  - [Development environment](#development-environment)
+  - [Functionality provided by this template](#functionality-provided-by-this-template)
+    - [Connection to the cloud](#connection-to-the-cloud)
+      - [Get a Device ID and a private key](#get-a-device-id-and-a-private-key)
+    - [Provisioning of Wi-fi through Bluetooth LE](#provisioning-of-wi-fi-through-bluetooth-le)
+    - [Cloud features examples](#cloud-features-examples)
+    - [OTA updates](#ota-updates)
+      - [OTA Security Configuration](#ota-security-configuration)
+  - [Setting of product ID](#setting-of-product-id)
 
 ## Content of the repository
 
@@ -120,15 +128,58 @@ The following features are shown in the firmware:
   * POST functions;
   * Variables GET;
   * GET through functions;
-  * Properties;
-  * Notifications;
   * Events publishing.
 
 ### OTA updates
 
-OTA updates are enabled. New firmware versions can be flashed by providing a valid URL to the device through the Trackle dashboard.
+OTA updates are enabled out of the box. New firmware versions can be flashed by providing a valid URL to the device through the Trackle dashboard.
 
 The URL must point to a ".bin" compiled firmware hosted on a publicly accessible webserver.
+
+#### OTA Security Configuration
+
+The firmware includes support for OTA signature verification and HTTPS certificate validation. To enable these security features:
+
+1. **Generate Public/Private Key Pair for OTA Verification**
+
+   Trackle OTA verification uses an **ECC P-256 (secp256r1)** public/private key pair. The **private key** is used to sign the firmware, while the **public key** is embedded in your ESP32 firmware to verify the signature.
+
+   Steps to generate keys:
+
+   ```bash
+   # 1) Generate the private key
+   openssl ecparam -name prime256v1 -genkey -noout -out private.pem
+
+   # 2) Generate the public key (PEM format)
+   openssl ec -in private.pem -pubout -out public.pem
+
+   # 3) Export the public key in DER format
+   openssl ec -in private.pem -pubout -outform DER -out public.der
+
+   # 4) Convert the DER public key into a C array
+   xxd -i public.der > firmware_key.c
+   ```
+
+2. **Configure OTA Certificate and Verification Key**
+
+   In `src/main.c`, you need to configure:
+   - `digicert_global_root_g2_pem`: The DigiCert Global Root G2 certificate in PEM format for HTTPS server certificate validation. You can download it from: https://www.digicert.com/kb/digicert-root-certificates.htm
+   - `firmware_public_key`: The public key array (from step 4 above) for firmware signature verification
+
+   Example configuration:
+
+   ```c
+   // OTA certificate and verification key
+   const char *digicert_global_root_g2_pem = "-----BEGIN CERTIFICATE-----\n...";
+   const uint8_t firmware_public_key[] = {0x30, 0x59, ...}; // From firmware_key.c
+   const size_t firmware_public_key_size = sizeof(firmware_public_key);
+   ```
+
+3. **Sign Your Firmware**
+
+   If the device is part of a product and the product has signature verification configured in the Trackle console, the firmware will be automatically signed when uploaded through the console. The signature will be verified by the device using the public key embedded in the firmware.
+
+> **Note:** If OTA verification is not configured, the device will still accept OTA updates, but without signature verification. For production deployments, it's strongly recommended to enable OTA verification.
 
 ## Setting of product ID
 

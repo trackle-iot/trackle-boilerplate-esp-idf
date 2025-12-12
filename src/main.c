@@ -19,6 +19,8 @@
 
 // Standard library includes
 #include <string.h>
+#include <time.h>
+#include <stdio.h>
 
 // FreeRTOS includes
 #include <freertos/FreeRTOS.h>
@@ -36,8 +38,6 @@
 #include <trackle_utils_bt_provision.h>
 #include <trackle_utils_wifi.h>
 #include <trackle_utils_ota.h>
-#include <trackle_utils_properties.h>
-#include <trackle_utils_notifications.h>
 
 // Local firmware includes
 #include "trackle_hardcoded_credentials.h"
@@ -47,25 +47,34 @@
 static const char *TAG = "main";
 
 // Cloud POST functions
-static int funSuccess(const char *args);
-static int funFailure(const char *args);
-static int incrementCloudNumber(const char *args);
+static int funSuccess(const char *paramString, bool isOwner, const char* funKey);
+static int funFailure(const char *paramString, bool isOwner, const char* funKey);
+static int incrementCloudNumber(const char *paramString, bool isOwner, const char* funKey);
 
 // Cloud GET functions
-static const void *getCloudNumberMessage(const char *args);
-static const void *getHalfCloudNumber(const char *args);
+static void *getCloudNumberMessage(const char *paramString, const char* varKey);
+static void *getHalfCloudNumber(const char *paramString, const char* varKey);
+static void *getLargeVariable(const char *paramString, const char* varKey);
 
 // Cloud GET variables
 static int cloudNumber = 0;
 
-// Properties declarations
-Trackle_PropID_t propRealEditable = Trackle_PropID_ERROR;
-Trackle_PropID_t propRealNotEditable = Trackle_PropID_ERROR;
+// Local variables for property updates
+static double rex = 0.0;
+static double rnex = 0.0;
 
-// Notifications declarations
-Trackle_NotificationID_t notifButtonPressed = Trackle_NotificationID_ERROR;
+// OTA certificate and verification key
+// TODO: Replace with actual DigiCert Global Root G2 certificate in PEM format
+// Download from: https://www.digicert.com/kb/digicert-root-certificates.htm
+const char *digicert_global_root_g2_pem = NULL; // Set to your certificate string
 
-static int updatedPropertyCustomCallback(const char *key, const char *arg, bool isOwner); // Custom callback for properties changes that come from cloud.
+// TODO: Replace with actual firmware public key for OTA signature verification
+// This should be the public key corresponding to the private key used to sign the firmware
+// Format: DER binary (typically 65 bytes for secp256r1 uncompressed public key)
+const uint8_t firmware_public_key[] = {0x00}; // Placeholder - replace with actual key
+const size_t firmware_public_key_size = sizeof(firmware_public_key);
+
+static int updatedPropertyCustomCallback(const char *function_key, const char *arg, ...); // Custom callback for properties changes that come from cloud.
 
 static void monitorFlashButtonForProvisioning(); // Periodically check if provisioning button is pressed.
 static void publishIfPeriodElapsed();            // Periodically publish event
@@ -117,6 +126,7 @@ void app_main()
 
     // Init Trackle
     initTrackle();
+    Trackle_loadClaimCode();
 
     // Set cloud credentials
     trackleSetKeys(trackle_s, private_key);
@@ -134,16 +144,7 @@ void app_main()
     // Registering values GETtable from cloud as result of a function call
     trackleGet(trackle_s, "getCloudNumberMessage", getCloudNumberMessage, VAR_STRING);
     trackleGet(trackle_s, "getHalfCloudNumber", getHalfCloudNumber, VAR_JSON);
-
-    // Registering properties and property groups
-    propRealEditable = Trackle_Prop_create("rex", 1000, 3, 0);
-    propRealNotEditable = Trackle_Prop_create("rnex", 1000, 3, 0);
-    Trackle_PropGroupID_t propGroup1 = Trackle_PropGroup_create(5000, true);
-    Trackle_PropGroup_addProp(propRealEditable, propGroup1);
-    Trackle_PropGroup_addProp(propRealNotEditable, propGroup1);
-
-    // Registering notifications
-    notifButtonPressed = Trackle_Notification_create("button", "inputs/btn", "%s pressed: %u, value: %s", 1, 0, 0);
+    trackleGet(trackle_s, "getLargeVariable", getLargeVariable, VAR_JSON);
 
     // Callback for cloud editable properties
     trackleSetUpdateStateCallback(trackle_s, updatedPropertyCustomCallback);
@@ -151,14 +152,18 @@ void app_main()
     // Enabling OTA
     trackleSetOtaUpdateCallback(trackle_s, firmware_ota_url);
 
+    // callback ota from utils
+    set_https_ota_certificate(digicert_global_root_g2_pem); // ok
+
+    bool res = trackleSetOtaVerificationKey(trackle_s, firmware_public_key, firmware_public_key_size);
+    if (!res)
+    {
+        ESP_LOGE(TAG, "Failed to set OTA verification key");
+    }
+
     // Perform connection to Trackle
-    connectTrackle();
-
-    // Start properties serving
-    Trackle_Props_startTask();
-
-    // Start notifications serving
-    Trackle_Notifications_startTask();
+    // connectTrackle();
+    xTaskCreate(&trackle_task, "trackle_task", 16384, NULL, 5, NULL);
 
     TickType_t latestIterationTime = xTaskGetTickCount();
     for (;;)
@@ -174,19 +179,22 @@ void app_main()
 
 // BEGIN -- Cloud POST functions --------------------------------------------------------------------------------------------------------------------
 
-static int funSuccess(const char *args)
+static int funSuccess(const char *paramString, bool isOwner, const char* funKey)
 {
     return 1;
 }
 
-static int funFailure(const char *args)
+static int funFailure(const char *paramString, bool isOwner, const char* funKey)
 {
     return -1;
 }
 
-static int incrementCloudNumber(const char *args)
+static int incrementCloudNumber(const char *paramString, bool isOwner, const char* funKey)
 {
-    cloudNumber++;
+    int increment = atoi(paramString);
+    if (increment == 0)
+        return -2;
+    cloudNumber += increment;
     return 1;
 }
 
@@ -195,13 +203,13 @@ static int incrementCloudNumber(const char *args)
 // BEGIN -- Cloud GET functions --------------------------------------------------------------------------------------------------------------------
 
 static char cloudNumberMessage[64];
-static const void *getCloudNumberMessage(const char *args)
+static void *getCloudNumberMessage(const char *paramString, const char* varKey)
 {
     sprintf(cloudNumberMessage, "The number is %d !", cloudNumber);
     return cloudNumberMessage;
 }
 
-static const void *getHalfCloudNumber(const char *args)
+static void *getHalfCloudNumber(const char *paramString, const char* varKey)
 {
     static char buffer[40];
     buffer[0] = '\0';
@@ -209,22 +217,45 @@ static const void *getHalfCloudNumber(const char *args)
     return buffer;
 }
 
+// Esempio di callback per valori molto lunghi (usa block2 automaticamente)
+static void *getLargeVariable(const char *paramString, const char* varKey)
+{
+    // Questo esempio restituisce un JSON molto grande
+    // La libreria userà automaticamente block2 per inviarlo in blocchi
+    static char large_json[10000];
+    large_json[0] = '{';
+    int pos = 1;
+    // Genera un JSON con molti dati
+    // for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 40; i++)
+    {
+        if (i > 0)
+            large_json[pos++] = ',';
+        pos += snprintf(large_json + pos, sizeof(large_json) - pos,
+                        "\"sensor_%d\":{\"value\":%d,\"timestamp\":%lu}",
+                        i, i * 10, (unsigned long)time(NULL));
+    }
+    large_json[pos++] = '}';
+    large_json[pos] = '\0';
+    return large_json;
+}
+
 // END -- Cloud GET functions ----------------------------------------------------------------------------------------------------------------------
 
-static int updatedPropertyCustomCallback(const char *key, const char *arg, bool isOwner)
+static int updatedPropertyCustomCallback(const char *function_key, const char *arg, ...)
 {
-    if (strcmp(key, "rex") == 0)
+    if (strcmp(function_key, "rex") == 0)
     {
         double doubleValue = 0;
         if (sscanf(arg, "%lf", &doubleValue) < 1)
         {
             return -1;
         }
-        Trackle_Prop_update(propRealEditable, doubleValue * 1000);
-        ESP_LOGI(TAG, "rex property updated to: %.3f", Trackle_Prop_getValue(propRealEditable) / (double)Trackle_Prop_getScale(propRealEditable));
+        rex = doubleValue;
+        ESP_LOGI(TAG, "rex property updated to: %.3f", rex);
         return 1;
     }
-    else if (strcmp(key, "rnex") == 0)
+    else if (strcmp(function_key, "rnex") == 0)
     {
         return -2;
     }
@@ -238,12 +269,10 @@ static void monitorFlashButtonForProvisioning()
     if (!gpio_get_level(GPIO_NUM_0))
     {
         pressedMillis += MAIN_LOOP_PERIOD_MS;
-        Trackle_Notification_update(notifButtonPressed, 1, 0);
     }
     else
     {
         pressedMillis = 0;
-        Trackle_Notification_update(notifButtonPressed, 0, 0);
     }
     // ... and if pressure lasts more than 10s, enable bluetooth LE provisioning.
     if (pressedMillis > 10000)
@@ -265,16 +294,17 @@ static void publishIfPeriodElapsed()
     }
 }
 
+static char stats_buffer[4096];
 static void logTaskStatus()
 {
     static int waitingMillis = 0;
     waitingMillis += MAIN_LOOP_PERIOD_MS;
     if (waitingMillis > 10000)
     {
-        char stats_buffer[4096];
         vTaskList(stats_buffer);
         ESP_LOGI(TAG, "Task Name\tStatus\tPrio\tHWM\tTask\tAffinity");
         ESP_LOGI(TAG, "%s", stats_buffer);
         waitingMillis = 0;
+        ESP_LOGI(TAG, "Free RAM: %ld bytes", esp_get_free_heap_size());
     }
 }
