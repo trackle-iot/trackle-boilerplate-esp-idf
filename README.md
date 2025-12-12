@@ -13,6 +13,7 @@
   - [Functionality provided by this template](#functionality-provided-by-this-template)
     - [Connection to the cloud](#connection-to-the-cloud)
       - [Get a Device ID and a private key](#get-a-device-id-and-a-private-key)
+        - [Credential security and encryption](#credential-security-and-encryption)
     - [Provisioning of Wi-fi through Bluetooth LE](#provisioning-of-wi-fi-through-bluetooth-le)
     - [Cloud features examples](#cloud-features-examples)
     - [OTA updates](#ota-updates)
@@ -93,17 +94,19 @@ Once compiled, the firmware provides the following functionality:
 * Open "My Devices" section from the drawer
 * Click the button "Claim a device"
 * Select the link "I don't have a device id", then Continue
-* The Device ID will be shown on the screen and the private key file will be download with name <device_id>.der where <device_id> is Device ID taken from Trackle.
+* The Device ID will be shown on the screen and the private key file will be downloaded as <device_id>.der where <device_id> is the Device ID from Trackle.
 
 Device ID and the private key are the credentials needed by Trackle cloud to authenticate and identify the device.
 
 In order to connect to the cloud (and even to be able to build the firmware), one must decide if connection will be performed using:
   * Hardcoded credentials;
-  * Credentials from internal flash storage.
+  * Credentials from internal flash storage (`USE_CREDENTIALS_FROM_FLASH`).
 
 In the first case, credentials must be provided to the firmware by putting them in the source code (see instructions in [trackle_hardcoded_credentials.h](include/trackle_hardcoded_credentials.h)). This solution is provided since it's the quickest and it's thought to be used for tests.
 
-In the second case, credentials are taken from the flash storage, so they must have been previously created and written using [NVS Partition Generator Utility](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/storage/nvs_partition_gen.html) with the following CSV File Format:
+In the second case (`USE_CREDENTIALS_FROM_FLASH`), credentials are read at boot from the factory partition. By default they are treated as plain; if the flag `encrypted=1` is present, the private key is decrypted with the eFuse AES key, while the Device ID remains plain. If credentials are missing, the firmware requests them over UART (UDC) and can store the private key encrypted when `encrypted=1` is provided.
+
+To pre-create the partition via the [NVS Partition Generator Utility](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/storage/nvs_partition_gen.html), use the following CSV File Format:
 
 ```
 key,type,encoding,value
@@ -113,6 +116,14 @@ private_key,file,binary,<device_id>.der
 ```
 
 The choice is made through the declaration of the `USE_CREDENTIALS_FROM_FLASH` constant in `platformio.ini`.
+
+##### Credential security and encryption
+
+The library encrypts credentials using an AES-128 key stored in eFuse and loaded automatically by `initStorage()`:
+
+- **Symmetric key in eFuse**: `initStorage()` calls `trackle_crypto_init()`, which looks for a key in BLK3. If none is found, it generates a random 128-bit key and burns it into the fuses. This is irreversible and binds the key to the device.
+- **Device ID and private key in NVS**: when `USE_CREDENTIALS_FROM_FLASH` is active, the library reads credentials from the factory partition via `readDeviceInfoFromStorage()`. If it finds `encrypted=1`, it decrypts the stored private key with the eFuse AES key; otherwise it assumes the credentials are stored in plain. Device ID is always stored and read in plain.
+- **Encrypted Wi‑Fi credentials**: `writeWifiConfigToStorage()` encrypts SSID and password with the same AES key and saves them to the `config` partition (namespace `machine`, key `wifi_creds`). `readWifiConfigFromStorage()` decrypts them at boot and `app_main()` passes them to `wifi_set_credentials()`. If missing, it logs the error and Wi‑Fi remains to be provisioned.
 
 ### Provisioning of Wi-fi through Bluetooth LE
 
@@ -183,6 +194,6 @@ The firmware includes support for OTA signature verification and HTTPS certifica
 
 ## Setting of product ID
 
-Product ID can be set by declaring the `IS_PRODUCT` and `PRODUCT_ID` constants in `platformio.ini`. While intializing `IS_PRODUCT` with a value is not mandatory, `PRODUCT_ID` on the contrary must be initialized with the desired product ID.
+Product ID can be set by declaring the `IS_PRODUCT` and `PRODUCT_ID` constants in `platformio.ini`. While initializing `IS_PRODUCT` with a value is not mandatory, `PRODUCT_ID` on the contrary must be initialized with the desired product ID.
 
 The project can be compiled even if the current device is not a product (as intended in the context of a Trackle connected application).
