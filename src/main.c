@@ -28,7 +28,6 @@
 #include <freertos/task.h>
 
 // Other ESP-IDF includes
-#include <nvs_flash.h>
 #include <esp_log.h>
 #include <driver/gpio.h>
 
@@ -38,23 +37,34 @@
 #include <trackle_utils_bt_provision.h>
 #include <trackle_utils_wifi.h>
 #include <trackle_utils_ota.h>
+#include <trackle_utils_crypto.h>
+#include <trackle_utils_provisioning.h>
 
 // Local firmware includes
 #include "trackle_hardcoded_credentials.h"
 
 #define MAIN_LOOP_PERIOD_MS 10 // Main loop period in milliseconds
+// #define USE_CREDENTIALS_FROM_FLASH
 
 static const char *TAG = "main";
 
 // Cloud POST functions
-static int funSuccess(const char *paramString, bool isOwner, const char* funKey);
-static int funFailure(const char *paramString, bool isOwner, const char* funKey);
-static int incrementCloudNumber(const char *paramString, bool isOwner, const char* funKey);
+static int funSuccess(const char *paramString, bool isOwner, const char *funKey);
+static int funFailure(const char *paramString, bool isOwner, const char *funKey);
+static int incrementCloudNumber(const char *paramString, bool isOwner, const char *funKey);
 
 // Cloud GET functions
-static void *getCloudNumberMessage(const char *paramString, const char* varKey);
-static void *getHalfCloudNumber(const char *paramString, const char* varKey);
-static void *getLargeVariable(const char *paramString, const char* varKey);
+static void *getCloudNumberMessage(const char *paramString, const char *varKey);
+static void *getHalfCloudNumber(const char *paramString, const char *varKey);
+static void *getLargeVariable(const char *paramString, const char *varKey);
+
+void infiniteLoop()
+{
+    while (1)
+    {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
 
 // Cloud GET variables
 static int cloudNumber = 0;
@@ -82,38 +92,149 @@ static void logTaskStatus();                     // Periodically log task status
 
 void app_main()
 {
-    esp_err_t err = ESP_OK;
-
-    // Initialize NVS
-    err = nvs_flash_init();
-    if (err != ESP_OK)
-    {
-        ESP_LOGE(TAG, "Error initializing NVS: %s", esp_err_to_name(err));
-        return;
-    }
-
-    // Wifi and BT provisioning setup
-    wifi_init();
-    wifi_init_sta();
-
-    trackle_utils_bt_provision_set_device_name("TrackleBpPrj");
-    trackle_utils_bt_provision_init();
+    srand(time(NULL));
+    int result = initStorage(true);
 
     // Fetching Trackle credentials (from flash storage or from hardcoded values)
 #ifdef USE_CREDENTIALS_FROM_FLASH
     ESP_LOGI(TAG, "Using credentials from flash storage.");
-    initStorage(true);
-    err = readDeviceInfoFromStorage();
+
+    // task to get config from uart
+    if (result == STORAGE_INIT_DEVICE_OPEN_FAIL)
+    {
+        // Define configuration requests (NULL-TERMINATED!)
+        static const udc_data_request_t CONFIG_REQUESTS[] = {
+            {"Device ID (hex)", "device_id", UDC_TYPE_HEX, true},
+            {"Private Key (hex)", "private_key", UDC_TYPE_HEX, true},
+            {"Use encryption", "encrypted", UDC_TYPE_BOOL, true},
+            {NULL, NULL, 0, false} // <-- TERMINATOR (required!)
+        };
+
+        // Global storage for results and status
+        static udc_collected_data_t g_results[4]; // Size = requests + 1 for safety
+        static volatile bool g_collection_done = false;
+        static volatile udc_result_t g_collection_result = UDC_SUCCESS;
+
+        // 3. Avvia task (NON bloccante)
+        esp_err_t err = udc_start_auto(CONFIG_REQUESTS, g_results, &g_collection_done, &g_collection_result);
+
+        ESP_LOGW(TAG, "Collection started, main continues...");
+
+        while (1)
+        {
+            // Check if collection is complete
+            if (g_collection_done)
+            {
+                ESP_LOGW(TAG, "Collection completed with result: %d", (int)g_collection_result);
+
+                if (g_collection_result == UDC_SUCCESS)
+                {
+                    ESP_LOGW(TAG, "Configuration collected successfully!");
+
+                    // Access collected data using AUTO-COUNT functions
+                    udc_collected_data_t *device_id = udc_get_auto("device_id", CONFIG_REQUESTS, g_results);
+                    if (device_id)
+                    {
+                        ESP_LOGW(TAG, "Device ID (%zu bytes):", device_id->hex_length);
+                        ESP_LOG_BUFFER_HEX(TAG, device_id->hex_buffer, device_id->hex_length);
+                    }
+
+                    udc_collected_data_t *private_key = udc_get_auto("private_key", CONFIG_REQUESTS, g_results);
+                    if (private_key)
+                    {
+                        ESP_LOGW(TAG, "Private Key (%zu bytes):", private_key->hex_length);
+                        ESP_LOG_BUFFER_HEX(TAG, private_key->hex_buffer, private_key->hex_length);
+                    }
+
+                    udc_collected_data_t *encrypted = udc_get_auto("encrypted", CONFIG_REQUESTS, g_results);
+                    if (encrypted)
+                    {
+                        ESP_LOGW(TAG, "Use encryption: %s", encrypted->bool_value ? "YES" : "NO");
+                    }
+
+                    ESP_LOGW(TAG, "All configuration data processed");
+
+                    // encrypted PRIVATE KEY IF NEEDED
+                    if (encrypted && encrypted->bool_value && private_key && private_key->hex_length > 0)
+                    {
+                        ESP_LOGW(TAG, "Encrypting private key before storage...");
+
+                        // Buffer per la private key cifrata
+                        uint8_t encrypted_private_key[256]; // Assicurati sia abbastanza grande
+
+                        // Cifra la private key
+                        esp_err_t encrypt_err = trackle_crypto_encrypt(private_key->hex_buffer,
+                                                                       private_key->hex_length,
+                                                                       encrypted_private_key);
+
+                        if (encrypt_err == ESP_OK)
+                        {
+                            // Sostituisci la private key con quella cifrata
+                            memcpy(private_key->hex_buffer, encrypted_private_key, private_key->hex_length);
+                            ESP_LOGW(TAG, "Private key encrypted successfully");
+                            ESP_LOG_BUFFER_HEX(TAG, private_key->hex_buffer, private_key->hex_length);
+                        }
+                        else
+                        {
+                            ESP_LOGE(TAG, "Failed to encrypt private key: %s", esp_err_to_name(encrypt_err));
+                        }
+                    }
+
+                    // SCRIVI TUTTO IN FACTORY_DATA
+                    ESP_LOGW(TAG, "Writing configuration to factory_data partition...");
+                    esp_err_t write_err = udc_write_to_factory(CONFIG_REQUESTS, g_results);
+
+                    if (write_err == ESP_OK)
+                    {
+                        ESP_LOGW(TAG, "Successfully wrote configuration to factory_data");
+                    }
+                    else
+                    {
+                        ESP_LOGE(TAG, "Failed to write to factory_data: %s", esp_err_to_name(write_err));
+                    }
+                }
+                else
+                {
+                    ESP_LOGE(TAG, "Configuration collection failed");
+                }
+
+                // collection data done, reboot
+                esp_restart();
+            }
+
+            vTaskDelay(pdMS_TO_TICKS(1000));
+        }
+    }
+
+    esp_err_t err = readDeviceInfoFromStorage();
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "Error reading Trackle credentials from flash: err=%s", esp_err_to_name(err));
-        return;
+        infiniteLoop();
     }
 #else
     ESP_LOGI(TAG, "Using hardcoded credentials.");
     memcpy(device_id, HARDCODED_DEVICE_ID, sizeof(uint8_t) * DEVICE_ID_LENGTH);
     memcpy(private_key, HARDCODED_PRIVATE_KEY, sizeof(uint8_t) * PRIVATE_KEY_LENGTH);
 #endif
+
+    // Wifi and BT provisioning setup
+    wifi_init();
+
+    char ssid2[33], password2[65];
+    if (readWifiConfigFromStorage(ssid2, password2) == ESP_OK)
+    {
+        wifi_set_credentials(ssid2, password2);
+    }
+    else
+    {
+        ESP_LOGE(TAG, "No Wi-Fi credentials found");
+    }
+
+    wifi_init_sta();
+
+    trackle_utils_bt_provision_set_device_name("TrackleBpPrj");
+    trackle_utils_bt_provision_init();
 
     // Print device information
     // ESP_LOGE(TAG, "Firmware version: %d", FIRMWARE_VERSION);
@@ -133,8 +254,15 @@ void app_main()
     trackleSetDeviceId(trackle_s, device_id);
     // trackleSetFirmwareVersion(trackle_s, FIRMWARE_VERSION);
 
-    // Set GPIO0 (FLASH/BOOT button on most boards) as input, to start provisioning through bluetooth
-    gpio_set_direction(GPIO_NUM_0, GPIO_MODE_INPUT);
+    // Configura GPIO0 (FLASH/BOOT) come input con pull-up interno per leggere il pulsante
+    gpio_config_t gpio0_cfg = {
+        .pin_bit_mask = 1ULL << GPIO_NUM_0,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    gpio_config(&gpio0_cfg);
 
     // Registering POST functions callable from cloud
     tracklePost(trackle_s, "funSuccess", funSuccess, ALL_USERS);
@@ -172,24 +300,24 @@ void app_main()
         trackle_utils_bt_provision_loop();
         monitorFlashButtonForProvisioning();
         publishIfPeriodElapsed();
-        logTaskStatus();
+        // logTaskStatus();
         vTaskDelayUntil(&latestIterationTime, MAIN_LOOP_PERIOD_MS / portTICK_PERIOD_MS);
     }
 }
 
 // BEGIN -- Cloud POST functions --------------------------------------------------------------------------------------------------------------------
 
-static int funSuccess(const char *paramString, bool isOwner, const char* funKey)
+static int funSuccess(const char *paramString, bool isOwner, const char *funKey)
 {
     return 1;
 }
 
-static int funFailure(const char *paramString, bool isOwner, const char* funKey)
+static int funFailure(const char *paramString, bool isOwner, const char *funKey)
 {
     return -1;
 }
 
-static int incrementCloudNumber(const char *paramString, bool isOwner, const char* funKey)
+static int incrementCloudNumber(const char *paramString, bool isOwner, const char *funKey)
 {
     int increment = atoi(paramString);
     if (increment == 0)
@@ -203,13 +331,13 @@ static int incrementCloudNumber(const char *paramString, bool isOwner, const cha
 // BEGIN -- Cloud GET functions --------------------------------------------------------------------------------------------------------------------
 
 static char cloudNumberMessage[64];
-static void *getCloudNumberMessage(const char *paramString, const char* varKey)
+static void *getCloudNumberMessage(const char *paramString, const char *varKey)
 {
     sprintf(cloudNumberMessage, "The number is %d !", cloudNumber);
     return cloudNumberMessage;
 }
 
-static void *getHalfCloudNumber(const char *paramString, const char* varKey)
+static void *getHalfCloudNumber(const char *paramString, const char *varKey)
 {
     static char buffer[40];
     buffer[0] = '\0';
@@ -218,7 +346,7 @@ static void *getHalfCloudNumber(const char *paramString, const char* varKey)
 }
 
 // Esempio di callback per valori molto lunghi (usa block2 automaticamente)
-static void *getLargeVariable(const char *paramString, const char* varKey)
+static void *getLargeVariable(const char *paramString, const char *varKey)
 {
     // Questo esempio restituisce un JSON molto grande
     // La libreria userà automaticamente block2 per inviarlo in blocchi
@@ -274,8 +402,8 @@ static void monitorFlashButtonForProvisioning()
     {
         pressedMillis = 0;
     }
-    // ... and if pressure lasts more than 10s, enable bluetooth LE provisioning.
-    if (pressedMillis > 10000)
+    // ... and if pressure lasts more than 5s, enable bluetooth LE provisioning.
+    if (pressedMillis > 5000)
     {
         xEventGroupSetBits(s_wifi_event_group, START_PROVISIONING);
         pressedMillis = 0;
