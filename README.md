@@ -13,8 +13,8 @@
   - [Functionality provided by this template](#functionality-provided-by-this-template)
     - [Connection to the cloud](#connection-to-the-cloud)
       - [Get a Device ID and a private key](#get-a-device-id-and-a-private-key)
-        - [Credential security and encryption](#credential-security-and-encryption)
-    - [Provisioning of Wi-fi through Bluetooth LE](#provisioning-of-wi-fi-through-bluetooth-le)
+      - [Credential security and encryption](#credential-security-and-encryption)
+      - [Provisioning of Wi-fi through Bluetooth LE](#provisioning-of-wi-fi-through-bluetooth-le)
     - [Cloud features examples](#cloud-features-examples)
     - [OTA updates](#ota-updates)
       - [OTA Security Configuration](#ota-security-configuration)
@@ -117,7 +117,7 @@ private_key,file,binary,<device_id>.der
 
 The choice is made through the declaration of the `USE_CREDENTIALS_FROM_FLASH` constant in `platformio.ini`.
 
-##### Credential security and encryption
+#### Credential security and encryption
 
 The library encrypts credentials using an AES-128 key stored in eFuse and loaded automatically by `initStorage()`:
 
@@ -125,7 +125,7 @@ The library encrypts credentials using an AES-128 key stored in eFuse and loaded
 - **Device ID and private key in NVS**: when `USE_CREDENTIALS_FROM_FLASH` is active, the library reads credentials from the factory partition via `readDeviceInfoFromStorage()`. If it finds `encrypted=1`, it decrypts the stored private key with the eFuse AES key; otherwise it assumes the credentials are stored in plain. Device ID is always stored and read in plain.
 - **Encrypted Wi‑Fi credentials**: `writeWifiConfigToStorage()` encrypts SSID and password with the same AES key and saves them to the `config` partition (namespace `machine`, key `wifi_creds`). `readWifiConfigFromStorage()` decrypts them at boot and `app_main()` passes them to `wifi_set_credentials()`. If missing, it logs the error and Wi‑Fi remains to be provisioned.
 
-### Provisioning of Wi-fi through Bluetooth LE
+#### Provisioning of Wi-fi through Bluetooth LE
 
 Provisioning of Wi-fi credentials to the device can be done using [ESP BLE Provisioning](https://play.google.com/store/apps/details?id=com.espressif.provble): Espressif's official provisioning app.
 
