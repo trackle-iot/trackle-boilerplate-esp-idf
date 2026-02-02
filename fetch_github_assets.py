@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-" Download private or public Github asset v2 "
+" Download private or public Github asset v3"
 
 import os
 import sys
@@ -40,6 +40,62 @@ class DownloadFailed(Exception):
     def __init__(self, local_path, status_code):
         Exception.__init__(self, f"Download of asset {local_path} failed with"
                            f" status code {status_code}.")
+
+def fetch_latest_release_tag(gh_token, repo_name):
+    " Fetch latest release tag for a Github repo "
+    try:
+        if gh_token is None:
+            repo = github.Github().get_repo(repo_name)
+        else:
+            repo = github.Github(gh_token).get_repo(repo_name)
+        latest_release = repo.get_latest_release()
+        return latest_release.tag_name
+    except github.GithubException:
+        # Best-effort: do not fail the build if we can't read latest release
+        return None
+
+def warn_and_confirm_if_newer_available(latest_tag, configured_tag, repo_name):
+    """
+    If a newer release is available, ask confirmation on console.
+    - 'y' continues
+    - 'n' stops compilation (exit 1)
+    In non-interactive environments, it only warns and continues.
+    """
+    if not latest_tag or not configured_tag:
+        return
+    if latest_tag == configured_tag:
+        return
+
+    print(f"WARNING: a newer release is available for {repo_name}.")
+    print(f" - installed/configured: {configured_tag}")
+    print(f" - latest release:       {latest_tag}")
+
+    if not sys.stdin.isatty():
+        print("Non-interactive environment: continuing automatically.")
+        return
+
+    while True:
+        try:
+            print(f"\nPress 'y' to continue or 'n' to abort:")
+            
+            # Leggi una riga completa
+            line = sys.stdin.readline() 
+            if not line:  # EOF
+                print("\nInput not available: continuing automatically.")
+                return
+            
+            choice = line.strip().lower()
+            
+            if choice == "y":
+                return
+            if choice == "n":
+                print("Aborted by user.")
+                sys.exit(1)
+            print("Invalid input. Please enter 'y' or 'n'.")
+            
+        except (EOFError, KeyboardInterrupt):
+            print("\nInput not available: continuing automatically.")
+            return
 
 def fetch_asset_url(gh_token, repo_name, release_tag, desired_asset_name):
     " Fetch download URL for desired Github release asset "
@@ -124,7 +180,16 @@ if not hasattr(env, "IsCleanTarget") or not env.IsCleanTarget():
         else:
             if assets_string:
                 assets_list = map(partial(str.split, sep="<-"), assets_string.split())
+                latest_release_cache = {}
                 for component, filename, tag, repo in assets_list:
+
+                    if repo not in latest_release_cache:
+                        latest_release_cache[repo] = fetch_latest_release_tag(token, repo)
+                        warn_and_confirm_if_newer_available(
+                            latest_release_cache[repo],
+                            tag,
+                            repo
+                        )
 
                     try:
                         dwnld_url = fetch_asset_url(token, repo, tag, filename)
