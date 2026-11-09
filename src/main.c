@@ -222,7 +222,8 @@ void app_main()
     wifi_init();
 
     char ssid2[33], password2[65];
-    if (readWifiConfigFromStorage(ssid2, password2) == ESP_OK)
+    if (readWifiConfigFromStorage(ssid2, sizeof(ssid2), password2,
+                                  sizeof(password2)) == ESP_OK)
     {
         wifi_set_credentials(ssid2, password2);
     }
