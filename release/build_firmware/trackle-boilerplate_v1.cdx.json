@@ -1,0 +1,1248 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:204fc6e7-5fc8-47bc-9080-21fda38c8596",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-11-04T16:27:05Z",
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "supplier": {
+            "name": "IOTREADY S.r.l."
+          },
+          "publisher": "IOTREADY S.r.l.",
+          "name": "iotready-fwsbom",
+          "version": "1.0.0",
+          "description": "Generatore di SBOM per firmware embedded: combina i metadati del progetto con l'analisi dell'ELF"
+        }
+      ]
+    },
+    "component": {
+      "type": "firmware",
+      "bom-ref": "firmware",
+      "name": "trackle-boilerplate-esp-idf-build_firmware",
+      "version": "1",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7bf9177572f5ab1f79c7db207e326bcb56dd8e87c4d2a4ec0957b96b94bdfdf9"
+        }
+      ],
+      "properties": [
+        {
+          "name": "fwsbom:hash-source",
+          "value": "firmware.bin"
+        },
+        {
+          "name": "fwsbom:elf-sha256",
+          "value": "2c9574f6ca2b2e6427d75edec2b100d90282dcf220e582ced5d7b45faf3e2c9c"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "fwsbom:build-config",
+        "value": "build_firmware"
+      },
+      {
+        "name": "fwsbom:version-source",
+        "value": "parametro -version"
+      },
+      {
+        "name": "fwsbom:platform",
+        "value": "platformio"
+      },
+      {
+        "name": "fwsbom:elf:machine",
+        "value": "EM_XTENSA"
+      },
+      {
+        "name": "fwsbom:elf:dwarf",
+        "value": "true"
+      },
+      {
+        "name": "fwsbom:hash-method",
+        "value": "fwsbom-dir-sha256-v1: per ogni file della cartella (esclusa .git), ordinati per percorso relativo con '/', si concatena <percorso>\\0<sha256 esadecimale del contenuto>\\n; l'hash è lo SHA-256 del risultato"
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "apache-mynewt-nimble@1.6.0",
+      "supplier": {
+        "name": "Espressif Systems (Shanghai) CO LTD"
+      },
+      "name": "Apache Mynewt Nimble",
+      "version": "1.6.0",
+      "description": "An open-source Bluetooth 5.1 stack with additional features and patches from Espressif.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "87d02f668ba62a842e34a4af5a1dfc57adfaf8975a62836c7134a238a58c423f"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:espressif:apache_mynewt_nimble:1.6.0:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95,
+                "value": "$IDF_PATH/components/bt/host/nimble/nimble/sbom.yml"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "50 compile unit DWARF sotto $IDF_PATH/components/bt/host/nimble/nimble"
+              },
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.85,
+                "value": "licenza dichiarata nei file: $IDF_PATH/components/bt/host/nimble/nimble/LICENSE"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "50"
+        },
+        {
+          "name": "fwsbom:cpe-source",
+          "value": "generated"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH/components/bt/host/nimble/nimble"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "cjson@1.7.18",
+      "supplier": {
+        "name": "Dave Gamble"
+      },
+      "name": "cJSON",
+      "version": "1.7.18",
+      "description": "Ultralightweight JSON parser in ANSI C",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "123a78e780b7eab287fe3e440ba5a351b32c452ac9a35cdd3ac0cf6ba4d71d7c"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:cjson_project:cjson:1.7.18:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95,
+                "value": "$IDF_PATH/.gitmodules [components/json/cJSON]"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "1 compile unit DWARF sotto $IDF_PATH/components/json/cJSON"
+              },
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.85,
+                "value": "licenza dichiarata nei file: $IDF_PATH/components/json/cJSON/LICENSE"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "1"
+        },
+        {
+          "name": "fwsbom:git-hash",
+          "value": "8f2beb57ddad1f94bed899790b00f46df893ccac"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH/components/json/cJSON"
+        }
+      ]
+    },
+    {
+      "type": "framework",
+      "bom-ref": "esp-idf@5.5.0",
+      "supplier": {
+        "name": "Espressif Systems (Shanghai) CO LTD"
+      },
+      "name": "ESP-IDF",
+      "version": "5.5.0",
+      "description": "target esp32",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:espressif:esp-idf:5.5.0:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.9,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.9,
+                "value": ".pio/build/build_firmware/project_description.json: git_revision=5.5.0"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "361 compile unit DWARF sotto il percorso del componente"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.6,
+                "value": "header del componente inclusi (3509 riferimenti nella line table)"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "361"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "app_update"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "bootloader_support"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "bt"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "cxx"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "efuse"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp-tls"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_app_format"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_bootloader_format"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_coex"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_common"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_driver_gpio"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_driver_uart"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_event"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_http_client"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_https_ota"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_hw_support"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_mm"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_netif"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_partition"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_phy"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_ringbuf"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_rom"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_security"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_system"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_timer"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_vfs_console"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "esp_wifi"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "freertos"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "hal"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "heap"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "json"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "log"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "lwip"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "mbedtls"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "nvs_flash"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "nvs_sec_provider"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "protobuf-c"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "protocomm"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "pthread"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "soc"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "spi_flash"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "tcp_transport"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "vfs"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "wifi_provisioning"
+        },
+        {
+          "name": "fwsbom:module",
+          "value": "xtensa"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "freertos@10.5.1",
+      "supplier": {
+        "name": "Espressif Systems (Shanghai) CO LTD"
+      },
+      "name": "freertos",
+      "version": "10.5.1",
+      "description": "An open-source, real-time operating system (RTOS) with additional features and patches from Espressif.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c761c7957dcf845b349a505a37a4318925e5ca96ad13dd6a4606cadb89bb504c"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:o:amazon:freertos:10.5.1:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95,
+                "value": "$IDF_PATH/components/freertos/FreeRTOS-Kernel/sbom.yml"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "16 compile unit DWARF sotto il percorso del componente"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.6,
+                "value": "header del componente inclusi (327 riferimenti nella line table)"
+              },
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.85,
+                "value": "licenza confermata dai file: $IDF_PATH/components/freertos/FreeRTOS-Kernel/LICENSE.md"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "16"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH/components/freertos/FreeRTOS-Kernel"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "http-parser@2.7.0",
+      "supplier": {
+        "name": "Espressif Systems (Shanghai) CO LTD"
+      },
+      "name": "HTTP Parser",
+      "version": "2.7.0",
+      "description": "HTTP request/response parser for c.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "964868a901ac80e45c62840f91d4d14bc16b08697c20c0836f932167479a7560"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:espressif:http_parser:2.7.0:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95,
+                "value": "$IDF_PATH/components/http_parser/sbom.yml"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "1 compile unit DWARF sotto $IDF_PATH/components/http_parser"
+              },
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.85,
+                "value": "licenza dichiarata nei file: $IDF_PATH/components/http_parser/LICENSE.txt"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "1"
+        },
+        {
+          "name": "fwsbom:cpe-source",
+          "value": "generated"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH/components/http_parser"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "lwip@2.2.0",
+      "supplier": {
+        "name": "Espressif Systems (Shanghai) CO LTD"
+      },
+      "name": "lwip",
+      "version": "2.2.0",
+      "description": "A Lightweight TCP/IP stack with additional features and patches from Espressif.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "aff2c7ea63c429cc9a02f04e2dd79c047a4eb96246300d993945d41c3a94505d"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:lwip_project:lwip:2.2.0:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95,
+                "value": "$IDF_PATH/components/lwip/lwip/sbom.yml"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "47 compile unit DWARF sotto il percorso del componente"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.6,
+                "value": "header del componente inclusi (721 riferimenti nella line table)"
+              },
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.85,
+                "value": "licenza confermata dai file: $IDF_PATH/components/lwip/lwip/COPYING"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "47"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH/components/lwip/lwip"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "mbedtls@3.6.3",
+      "supplier": {
+        "name": "Espressif Systems (Shanghai) CO LTD"
+      },
+      "name": "mbedtls",
+      "version": "3.6.3",
+      "description": "An open source, portable, easy to use, readable and flexible SSL library with additional features and patches from Espressif.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3ff32d43cbee4da3f8b8ad8bbcec4f5657b12fccee2b10ed585e8c4bbdb7d4d3"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:arm:mbed_tls:3.6.3:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95,
+                "value": "$IDF_PATH/components/mbedtls/mbedtls/sbom.yml"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "44 compile unit DWARF sotto il percorso del componente"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.6,
+                "value": "header del componente inclusi (424 riferimenti nella line table)"
+              },
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.85,
+                "value": "licenza dichiarata nei file: $IDF_PATH/components/mbedtls/mbedtls/LICENSE"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "44"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH/components/mbedtls/mbedtls"
+        },
+        {
+          "name": "fwsbom:note",
+          "value": "licenza della knowledge base (Apache-2.0 OR GPL-2.0-or-later) diversa da quella nei file (Apache-2.0)"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "newlib@4.3.0",
+      "supplier": {
+        "name": "Espressif Systems (Shanghai) CO LTD"
+      },
+      "name": "newlib",
+      "version": "4.3.0",
+      "description": "An open-source C standard library implementation with additional features and patches from Espressif.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b59c10932b3f70e1a7eee8e7daca4920923ac754cb778804d1286531d470c970"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "LGPL-2.1-or-later",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:newlib_project:newlib:4.3.0:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95,
+                "value": "$IDF_PATH/components/newlib/sbom.yml"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "14 compile unit DWARF sotto $IDF_PATH/components/newlib"
+              },
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.85,
+                "value": "licenza dichiarata nei file: $IDF_PATH/components/newlib/COPYING.NEWLIB"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "14"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH/components/newlib"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "protobuf-c@1.4.1",
+      "supplier": {
+        "name": "protobuf-c community <https://groups.google.com/g/protobuf-c>"
+      },
+      "name": "protobuf-c",
+      "version": "1.4.1",
+      "description": "Protocol Buffers implementation in C",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "17f308b5819377ca989f7a04bb43a195d8711e403ac895a9277ec47d8e8fd2a1"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:protobuf-c_project:protobuf-c:1.4.1:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95,
+                "value": "$IDF_PATH/.gitmodules [components/protobuf-c/protobuf-c]"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "1 compile unit DWARF sotto $IDF_PATH/components/protobuf-c/protobuf-c"
+              },
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.85,
+                "value": "licenza dichiarata nei file: $IDF_PATH/components/protobuf-c/protobuf-c/LICENSE"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "1"
+        },
+        {
+          "name": "fwsbom:git-hash",
+          "value": "abc67a11c6db271bedbb9f58be85d6f4e2ea8389"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH/components/protobuf-c/protobuf-c"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "trackle-library-esp-idf",
+      "name": "trackle-library-esp-idf",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "242fe94cb9210cf2245035d4d517dbe551f7b38b4801342dd469844d9b3b1229"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "LGPL-3.0-only",
+            "acknowledgement": "declared"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:unknown:trackle-library-esp-idf:*:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.9,
+            "methods": [
+              {
+                "technique": "filename",
+                "confidence": 0.5,
+                "value": "components/trackle-library-esp-idf"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "39 compile unit DWARF sotto components/trackle-library-esp-idf"
+              },
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.85,
+                "value": "licenza dichiarata nei file: components/trackle-library-esp-idf/LICENSE"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "39"
+        },
+        {
+          "name": "fwsbom:cpe-source",
+          "value": "generated"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "components/trackle-library-esp-idf"
+        },
+        {
+          "name": "fwsbom:note",
+          "value": "nessun manifest (sbom.yml, idf_component.yml): metadati da completare"
+        },
+        {
+          "name": "fwsbom:note",
+          "value": "versione proposta 5.1.0 da trackle_esp32.h: confermarla in fwsbom.yaml"
+        },
+        {
+          "name": "fwsbom:version-candidate",
+          "value": "5.1.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "wpa_supplicant@2.10",
+      "supplier": {
+        "name": "Espressif Systems (Shanghai) CO LTD"
+      },
+      "name": "wpa_supplicant",
+      "version": "2.10",
+      "description": "Espressif fork of wpa_supplicant - an open-source WPA/WPA2/WPA3/IEEE 802.1X Supplicant.",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "cc8967b1de1ec88ef1a168a49fb9c68ec0d169e39695924e643cec5fc3e9dfaf"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause",
+            "acknowledgement": "concluded"
+          }
+        }
+      ],
+      "cpe": "cpe:2.3:a:w1.fi:wpa_supplicant:2.10:*:*:*:*:*:*:*",
+      "evidence": {
+        "identity": [
+          {
+            "field": "name",
+            "confidence": 0.95,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 0.95,
+                "value": "$IDF_PATH/components/wpa_supplicant/sbom.yml"
+              },
+              {
+                "technique": "binary-analysis",
+                "confidence": 0.9,
+                "value": "42 compile unit DWARF sotto $IDF_PATH/components/wpa_supplicant"
+              },
+              {
+                "technique": "other",
+                "confidence": 0.6,
+                "value": "licenza dedotta dalla knowledge base di fwsbom (non dichiarata nel manifest)"
+              }
+            ]
+          }
+        ]
+      },
+      "properties": [
+        {
+          "name": "fwsbom:linked",
+          "value": "yes"
+        },
+        {
+          "name": "fwsbom:source-files",
+          "value": "42"
+        },
+        {
+          "name": "fwsbom:path-hint",
+          "value": "$IDF_PATH/components/wpa_supplicant"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "firmware",
+      "dependsOn": [
+        "esp-idf@5.5.0",
+        "trackle-library-esp-idf"
+      ]
+    },
+    {
+      "ref": "apache-mynewt-nimble@1.6.0"
+    },
+    {
+      "ref": "cjson@1.7.18"
+    },
+    {
+      "ref": "esp-idf@5.5.0",
+      "dependsOn": [
+        "apache-mynewt-nimble@1.6.0",
+        "cjson@1.7.18",
+        "freertos@10.5.1",
+        "http-parser@2.7.0",
+        "lwip@2.2.0",
+        "mbedtls@3.6.3",
+        "newlib@4.3.0",
+        "protobuf-c@1.4.1",
+        "wpa_supplicant@2.10"
+      ]
+    },
+    {
+      "ref": "freertos@10.5.1"
+    },
+    {
+      "ref": "http-parser@2.7.0"
+    },
+    {
+      "ref": "lwip@2.2.0"
+    },
+    {
+      "ref": "mbedtls@3.6.3"
+    },
+    {
+      "ref": "newlib@4.3.0"
+    },
+    {
+      "ref": "protobuf-c@1.4.1"
+    },
+    {
+      "ref": "trackle-library-esp-idf"
+    },
+    {
+      "ref": "wpa_supplicant@2.10"
+    }
+  ],
+  "formulation": [
+    {
+      "bom-ref": "build",
+      "components": [
+        {
+          "type": "application",
+          "bom-ref": "platformio-platform",
+          "name": "PlatformIO platform ",
+          "description": "espressif32 @ 6.12.0",
+          "evidence": {
+            "identity": [
+              {
+                "field": "name",
+                "confidence": 0.85,
+                "methods": [
+                  {
+                    "technique": "manifest-analysis",
+                    "confidence": 0.85,
+                    "value": "platformio.ini: platform = espressif32 @ 6.12.0"
+                  }
+                ]
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "fwsbom:role",
+              "value": "toolchain"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "bom-ref": "gcc@14.2.0",
+          "name": "GCC",
+          "version": "14.2.0",
+          "description": "crosstool-NG esp-14.2.0_20241119",
+          "evidence": {
+            "identity": [
+              {
+                "field": "name",
+                "confidence": 0.95,
+                "methods": [
+                  {
+                    "technique": "binary-analysis",
+                    "confidence": 0.9,
+                    "value": "sezione .comment: GCC: (crosstool-NG esp-14.2.0_20241119) 14.2.0"
+                  },
+                  {
+                    "technique": "binary-analysis",
+                    "confidence": 0.95,
+                    "value": "DW_AT_producer di 692 compile unit"
+                  }
+                ]
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "fwsbom:role",
+              "value": "toolchain"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "bom-ref": "gcc@5.2.0",
+          "name": "GCC",
+          "version": "5.2.0",
+          "description": "crosstool-NG crosstool-ng-1.22.0-78-g4b87650",
+          "evidence": {
+            "identity": [
+              {
+                "field": "name",
+                "confidence": 0.95,
+                "methods": [
+                  {
+                    "technique": "binary-analysis",
+                    "confidence": 0.9,
+                    "value": "sezione .comment: GCC: (crosstool-NG crosstool-ng-1.22.0-78-g4b87650) 5.2.0"
+                  },
+                  {
+                    "technique": "binary-analysis",
+                    "confidence": 0.95,
+                    "value": "DW_AT_producer di 6 compile unit"
+                  }
+                ]
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "fwsbom:role",
+              "value": "toolchain"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "bom-ref": "gcc@5.2.0-2",
+          "name": "GCC",
+          "version": "5.2.0",
+          "description": "crosstool-NG crosstool-ng-1.22.0-59-ga194053",
+          "evidence": {
+            "identity": [
+              {
+                "field": "name",
+                "confidence": 0.95,
+                "methods": [
+                  {
+                    "technique": "binary-analysis",
+                    "confidence": 0.9,
+                    "value": "sezione .comment: GCC: (crosstool-NG crosstool-ng-1.22.0-59-ga194053) 5.2.0"
+                  },
+                  {
+                    "technique": "binary-analysis",
+                    "confidence": 0.95,
+                    "value": "DW_AT_producer di 6 compile unit"
+                  }
+                ]
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "fwsbom:role",
+              "value": "toolchain"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "bom-ref": "gcc@4.8.5",
+          "name": "GCC",
+          "version": "4.8.5",
+          "description": "crosstool-NG crosstool-ng-1.22.0-53-g46f160f-dirty",
+          "evidence": {
+            "identity": [
+              {
+                "field": "name",
+                "confidence": 0.95,
+                "methods": [
+                  {
+                    "technique": "binary-analysis",
+                    "confidence": 0.9,
+                    "value": "sezione .comment: GCC: (crosstool-NG crosstool-ng-1.22.0-53-g46f160f-dirty) 4.8.5"
+                  },
+                  {
+                    "technique": "binary-analysis",
+                    "confidence": 0.95,
+                    "value": "DW_AT_producer di 1 compile unit"
+                  }
+                ]
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "fwsbom:role",
+              "value": "toolchain"
+            }
+          ]
+        },
+        {
+          "type": "application",
+          "bom-ref": "gcc@11.2.0",
+          "name": "GCC",
+          "version": "11.2.0",
+          "description": "crosstool-NG esp-2022r1",
+          "evidence": {
+            "identity": [
+              {
+                "field": "name",
+                "confidence": 0.9,
+                "methods": [
+                  {
+                    "technique": "binary-analysis",
+                    "confidence": 0.9,
+                    "value": "sezione .comment: GCC: (crosstool-NG esp-2022r1) 11.2.0"
+                  }
+                ]
+              }
+            ]
+          },
+          "properties": [
+            {
+              "name": "fwsbom:role",
+              "value": "toolchain"
+            },
+            {
+              "name": "fwsbom:note",
+              "value": "presente solo in .comment: compilatore di librerie precompilate linkate nel firmware"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
